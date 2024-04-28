@@ -1,10 +1,10 @@
 -- Create Database 
 
-DROP DATABASE IF EXISTS avation_stack;
+DROP DATABASE IF EXISTS aeroquest;
 
-CREATE DATABASE avation_stack;
+CREATE DATABASE aeroquest;
 
-\c avation_stack;
+\c aeroquest;
 
 
 -- Create User Table 
@@ -44,7 +44,6 @@ CREATE TABLE airplanes (
     engines_type VARCHAR( 255 ) NOT NULL, 
     plane_age INTEGER NOT NULL, 
     plane_status VARCHAR( 255 ) NOT NULL,
-    registration_number VARCHAR( 255 ) NOT NULL, 
     date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

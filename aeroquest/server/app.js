@@ -19,6 +19,9 @@ app.use( express.urlencoded({ extended: true }) );
 
 // Routers 
 const airplanesRouter = require( './routes/airplanes' );
+
+
+// Route Prefix's 
 app.use( '/airplanes', airplanesRouter );
 
 
