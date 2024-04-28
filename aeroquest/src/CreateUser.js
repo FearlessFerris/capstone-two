@@ -4,10 +4,14 @@
 // Dependencies 
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button } from '@mui/material';
-
+import axios from 'axios';
 
 // Components & Necessary Files 
-
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateField } from '@mui/x-date-pickers/DateField';
+import dayjs from 'dayjs';
 
 // Create User Component 
 function CreateUser() {
@@ -17,7 +21,7 @@ function CreateUser() {
         password: '',
         confirmPassword: '',
         email: '',
-        dob: '',
+        dob: dayjs('2024-04-17'),
         imageUrl: '',
         imageUpload: ''
     }
@@ -33,17 +37,32 @@ function CreateUser() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleDateChange = ( date ) => {
+        setFormData(( prevData ) => ({
+            ...prevData,
+            selectedDate: date.$d,
+        }));
+    };
+
+
+    const handleSubmit = async ( e ) => {
         e.preventDefault();
-        const username = formData.username;
         const requiredFields = [ 'username', 'password', 'confirmPassword', 'email' ];
-        setMessage( `Congratulations ${ username }, you have successfully created an account!` );
-        if( !requiredFields.every(( field ) => formData[field].trim() !== '') ){
-            alert( 'Please fill out all required fields!!!' );
+        if (!requiredFields.every(( field ) => formData[field].trim() !== '') ) {
+            alert('Please fill out all required fields!!!');
             return;
         }
-        setFormData( initialState );
+
+        try {
+            const response = await axios.post( '/api/users/create', formData );
+            console.log(response.data);
+            setMessage( `Congratulations ${formData.username}, you have successfully created an account!` );
+            setFormData( initialState );
+        } catch (error) {
+            console.error('Error creating user:', error);
+        }
     };
+
 
     return(
         <div className = 'create-user-container'
@@ -69,6 +88,8 @@ function CreateUser() {
             )}
 
         <form>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DateField', 'DatePicker']}>
             <Box 
                 sx = {{
                     alignItems: 'center',
@@ -83,10 +104,10 @@ function CreateUser() {
                     justifyContent: 'flex-start',
                     textAlign: 'center',
                     width: '600px',
-                    height: '600px'
+                    height: '650px'
                 }}
                 > Create New User
-
+                
                 <TextField
                     required
                     id = 'username'
@@ -246,6 +267,41 @@ function CreateUser() {
                     }}
                     ></TextField>
                 
+                    <DateField
+                        label="Date of Birth"
+                        format="M/D/YYYY"
+                        defaultValue={dayjs('2022-04-17')}
+                        shouldRespectLeadingZeros
+                        InputLabelProps={{
+                        style: { color: 'white' },
+                        }}
+                    value = { formData.dob }
+                    onChange = { handleDateChange }
+                        sx={{
+                            textAlign: 'center',
+                            width: '350px',
+                            color: 'white',
+                            '& .MuiOutlinedInput-root .MuiInputLabel-root': {
+                                color: 'white',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: 'white',
+                            },
+                            '&:hover fieldset': {
+                                borderColor: 'white',
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: 'cyan',
+                            },
+                        },
+                        '& input': {
+                            color: 'cyan',
+                        },
+                        
+                        marginTop: '10px'
+                    }}
+                    />
 
                 <TextField
                     id = 'image-url'
@@ -340,6 +396,8 @@ function CreateUser() {
                     </Button>
                 </label>
             </Box> 
+            </DemoContainer>
+            </LocalizationProvider>
         </form>
         </div>
     )
