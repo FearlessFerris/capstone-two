@@ -25,7 +25,7 @@ function App() {
             <Route path = '/' element = { <Home /> } />
             {/* <Route path = '/search' /> */}
             <Route path = '/login' element = { <Login /> } />
-            <Route path = '/create' element = { <CreateUser /> } />
+            <Route path = '/users/create' element = { <CreateUser /> } />
           </Routes>
       </BrowserRouter>
     </div>

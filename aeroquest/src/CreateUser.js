@@ -17,6 +17,7 @@ function CreateUser() {
         password: '',
         confirmPassword: '',
         email: '',
+        dob: '',
         imageUrl: '',
         imageUpload: ''
     }
@@ -25,10 +26,7 @@ function CreateUser() {
     const [ message, setMessage ] = useState('');
 
     const handleChange = (e) => {
-        console.log( e.target.name );
-        console.log( e.target.value );
         const { name, value } = e.target;
-        console.log( name );
         setFormData((prevData) => ({
             ...prevData,
             [name]: value,
@@ -71,7 +69,6 @@ function CreateUser() {
             )}
 
         <form>
-
             <Box 
                 sx = {{
                     alignItems: 'center',
@@ -339,7 +336,7 @@ function CreateUser() {
                             },
                         }} 
                         onClick = { handleSubmit }
-                    > Create 
+                        > Create 
                     </Button>
                 </label>
             </Box> 

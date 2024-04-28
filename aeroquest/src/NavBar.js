@@ -71,7 +71,7 @@ function NavBar() {
 
                     <Typography 
                     component = { Link } 
-                    to = '/create' 
+                    to = '/users/create' 
                     color = 'white'
                     sx = {{ 
                         color: 'white', 

@@ -19,10 +19,12 @@ app.use( express.urlencoded({ extended: true }) );
 
 // Routers 
 const airplanesRouter = require( './routes/airplanes' );
+const userRouter = require( './routes/users' );
 
 
 // Route Prefix's 
-app.use( '/airplanes', airplanesRouter );
+app.use( '/api/airplanes', airplanesRouter );
+app.use( '/api/users', userRouter );
 
 
 // 404 Error Handler 

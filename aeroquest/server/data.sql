@@ -11,17 +11,18 @@ CREATE DATABASE aeroquest;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR( 100 ) UNIQUE NOT NULL,
-    password VARCHAR NOT NULL, 
-    email VARCHAR NOT NULL,
+    password VARCHAR( 255 ) NOT NULL, 
+    email VARCHAR( 255 ) NOT NULL,
     dob DATE,
-    image_url VARCHAR 
+    image_url VARCHAR( 255 ),
+    image_upload VARCHAR( 255 )
 );
 
 
 -- Create Search Table 
 CREATE TABLE searches (
     id SERIAL PRIMARY KEY,
-    search_term VARCHAR NOT NULL, 
+    search_term VARCHAR( 255 ) NOT NULL, 
     search_timestamp TIMESTAMP NOT NULL
 );
 
