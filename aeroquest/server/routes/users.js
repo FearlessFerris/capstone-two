@@ -5,49 +5,78 @@
 const express = require( 'express' );
 const router = express.Router();
 const axios = require( 'axios' );
-const pool = require( '../db' );
-
+const db = require( '../db' );
 
 // Routes 
 
-router.post( '/create', async ( req, res, next ) => {
-    try{
-        const { username, password, confirmPassword, email, dob, imageUrl, imageUpload } = req.body;
-        if( !username || !password || !confirmPassword || !email ){
-            return res.status( 400 ).json({ error: 'Please complete all required fields!' });
+router.get( '/', ( req, res ) => {
+    return res.send( 'Welcome to the users homepage!!!' );
+});
+
+// Create New User Account 
+router.post('/create', async (req, res, next) => {
+    try {
+        console.log('Received data:', req.body);
+        const {
+            username,
+            password,
+            email,
+            dob,
+            imageUrl,
+            imageUpload
+        } = req.body;
+
+        // Check if imageUrl and imageUpload are provided in the request
+        const hasImageUrl = imageUrl !== undefined && imageUrl.trim() !== '';
+        const hasImageUpload = imageUpload !== undefined && imageUpload.trim() !== '';
+
+        // Create an array to hold values for insertion
+        const values = [username, password, email, dob];
+
+        // Build the initial part of the SQL query
+        let query = `INSERT INTO users (username, password, email, dob`;
+
+        // Conditionally add imageUrl and imageUpload to the SQL query and values array
+        if (hasImageUrl) {
+            query += ', image_url';
+            values.push(imageUrl);
         }
-        if( password !== confirmPassword ){
-            return res.status( 400 ).json({ error: 'Please make sure passwords match!' });
-        }
-        
-        let query = `INSERT INTO users ( username, password, email `;
-        let values = [ username, password, email ];
-        if( dob ){
-            query += `, dob`;
-            values.push( dob );
-        }
-        if( imageUrl ){
-            query += `, image_url`
-            values.push( imageUrl );
-        }
-        if( imageUpload ){
+        if (hasImageUpload) {
             query += ', image_upload';
-            values.push( imageUpload );
+            values.push(imageUpload);
         }
 
-        query += `) VALUES ($1, $2, $3 `;
-        for( let i = 4; i < values.length + 4; i++ ){
+        // Complete the SQL query and add placeholders for values
+        // Complete the SQL query and add placeholders for values
+        query += `) VALUES ($1, $2, $3, $4`;
+        for (let i = 5; i <= values.length; i++) {
             query += `, $${i}`;
         }
-
         query += `) RETURNING *;`;
 
-        const result = await pool.query( query, values );
-        res.status( 201 ).json({ message: `User ${ username }, was created successfully!` });
+
+        console.log('Database insertion query:', query);
+        console.log('Database insertion values:', values);
+
+        // Execute the query with the values array
+       // Execute the query with the values array
+        const result = await db.query(query, values);
+        if (result.rowCount > 0) {
+            console.log('User created successfully:', result.rows[0]);
+            res.status(201).json({
+                message: `User ${username} was created successfully!`
+            });
+            res.redirect( '/');
+        } else {
+            console.error('Failed to create user:', result);
+            res.status(500).json({ error: 'Failed to create user. Please try again.' });
+        }
+
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: 'An error occurred while creating the user.' });
+        next(error);
     }
-    catch( error ){
-        next( error )
-    }
-})
+});
 
 module.exports = router;

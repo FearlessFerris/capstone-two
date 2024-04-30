@@ -3,16 +3,17 @@
 
 // Dependencies 
 const express = require( 'express' );
+const cors = require( 'cors' );
 const app = express();
 const ExpressError = require( './ExpressError' );
-const port = process.env.PORT || 3000;
-
+const port = 5000;
+const db = require( './db' );
 
 // Other Necessary Files 
-const db = require( './db' );
 
 
 // Middleware 
+app.use( cors() );
 app.use( express.json() );
 app.use( express.urlencoded({ extended: true }) );
 
@@ -23,8 +24,8 @@ const userRouter = require( './routes/users' );
 
 
 // Route Prefix's 
-app.use( '/api/airplanes', airplanesRouter );
-app.use( '/api/users', userRouter );
+app.use( '/airplanes', airplanesRouter );
+app.use( '/users', userRouter );
 
 
 // 404 Error Handler 

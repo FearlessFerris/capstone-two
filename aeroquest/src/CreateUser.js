@@ -6,12 +6,15 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import axios from 'axios';
 
+
 // Components & Necessary Files 
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateField } from '@mui/x-date-pickers/DateField';
 import dayjs from 'dayjs';
+
+axios.defaults.baseURL = 'http://localhost:5000'; // Or whatever URL your backend server is running on
 
 // Create User Component 
 function CreateUser() {
@@ -29,40 +32,86 @@ function CreateUser() {
     const [ formData, setFormData ] = useState( initialState );
     const [ message, setMessage ] = useState('');
 
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setFormData((prevData) => ({
+    //         ...prevData,
+    //         [name]: value,
+    //     }));
+    // };
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        if (!e || !e.target) {
+            return;
+        }
+    
+        const { name, value, type } = e.target;
+        // Use a conditional to handle file input separately
+        const newValue = type === 'file' ? e.target.files[0] : value;
+    
         setFormData((prevData) => ({
             ...prevData,
-            [name]: value,
+            [name]: newValue,
         }));
     };
+    
+    
 
-    const handleDateChange = ( date ) => {
-        setFormData(( prevData ) => ({
-            ...prevData,
-            selectedDate: date.$d,
-        }));
-    };
+    // const handleDateChange = ( date ) => {
+    //     setFormData(( prevData ) => ({
+    //         ...prevData,
+    //         selectedDate: date.$d
+    //     }));
+    // };
 
 
-    const handleSubmit = async ( e ) => {
+    // const handleSubmit = async ( e ) => {
+    //     console.log( formData );
+    //     e.preventDefault();
+    //     const requiredFields = [ 'username', 'password', 'confirmPassword', 'email' ];
+    //     if ( !requiredFields.every(( field ) => formData[field].trim() !== '' ) ) {
+    //         alert('Please fill out all required fields!!!');
+    //         return;
+    //     }
+
+    //     try {
+    //         const response = await axios.post( '/users/create', formData );
+    //         console.log(response.data);
+    //         setMessage( `Congratulations ${formData.username}, you have successfully created an account!` );
+    //         setFormData( initialState );
+    //     } catch (error) {
+    //         console.error('Error creating user:', error);
+    //     }
+    // };
+
+    const handleSubmit = async (e) => {
+        console.log(formData);
         e.preventDefault();
-        const requiredFields = [ 'username', 'password', 'confirmPassword', 'email' ];
-        if (!requiredFields.every(( field ) => formData[field].trim() !== '') ) {
+        const requiredFields = ['username', 'password', 'confirmPassword', 'email'];
+        if (!requiredFields.every((field) => formData[field].trim() !== '')) {
             alert('Please fill out all required fields!!!');
             return;
         }
-
+    
+        const formDataToSend = { ...formData };
+        // Remove imageUrl and imageUpload if they are empty strings
+        if (formData.imageUrl === '') {
+            delete formDataToSend.imageUrl;
+        }
+        if (formData.imageUpload === '') {
+            delete formDataToSend.imageUpload;
+        }
+    
         try {
-            const response = await axios.post( '/api/users/create', formData );
+            const response = await axios.post('/users/create', formDataToSend);
             console.log(response.data);
-            setMessage( `Congratulations ${formData.username}, you have successfully created an account!` );
-            setFormData( initialState );
+            setMessage(`Congratulations ${formData.username}, you have successfully created an account!`);
+            setFormData(initialState);
         } catch (error) {
             console.error('Error creating user:', error);
         }
     };
-
+    
 
     return(
         <div className = 'create-user-container'
@@ -276,7 +325,7 @@ function CreateUser() {
                         style: { color: 'white' },
                         }}
                     value = { formData.dob }
-                    onChange = { handleDateChange }
+                    onChange = { handleChange }
                         sx={{
                             textAlign: 'center',
                             width: '350px',

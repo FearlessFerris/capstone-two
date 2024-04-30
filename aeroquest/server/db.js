@@ -1,15 +1,25 @@
 // Setup Database Connection 
 
-const { Pool } = require( 'pg' );
-require( 'dotenv' ).config();
+const { Client } = require( 'pg' );
+const { connectionString } = require('pg/lib/defaults');
 
+let DB_URI;
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: 5432,
+if( process.env.NODE_ENV === 'test' ){
+    DB_URI = 'postgresql:///aeroquest_test';
+}
+else{
+    DB_URI = 'postgresql:///aeroquest';
+}
+
+let db = new Client({
+    // connectionString: DB_URI,
+    username: 'marcus',
+    password: 'Civil392601*',
+    host: 'localhost',
+    database: 'aeroquest',
+    port: 5432
 });
 
-module.exports = pool;
+db.connect();
+module.exports = db;

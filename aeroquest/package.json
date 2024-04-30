@@ -12,6 +12,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.8",
+    "cors": "^2.8.5",
     "dayjs": "^1.11.11",
     "express": "^4.19.2",
     "pg": "^8.11.5",
@@ -44,6 +45,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "proxy": "http://localhost:3000/api"
+  }
 }
