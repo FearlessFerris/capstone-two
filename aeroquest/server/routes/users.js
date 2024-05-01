@@ -7,6 +7,7 @@ const router = express.Router();
 const axios = require( 'axios' );
 const bcrypt = require( 'bcrypt' );
 const db = require( '../db' );
+const ExpressError = require( '../ExpressError' );
 
 // Routes 
 
@@ -23,13 +24,14 @@ router.post( '/login', async ( req, res, next ) => {
             return res.status( 400 ).json({ message: 'Username and Password are required!' });
         }
 
-        const query = `SELECT password WHERE username = $1`;
+        const query = `SELECT id, username, password FROM users WHERE username = $1`;
         const result = await db.query( query, [ username ] );
-        console.log( result );
+        console.log( result.rows[0] );
+        
 
     } 
     catch( error ){
-        console.error( error.response.data.message );
+        console.error( error );
     }
 });
 
@@ -37,7 +39,6 @@ router.post( '/login', async ( req, res, next ) => {
 // Create New User Account 
 router.post( '/create', async ( req, res, next ) => {
     try {
-        console.log( 'Received data:', req.body );
         const {
             username,
             password,
@@ -48,7 +49,7 @@ router.post( '/create', async ( req, res, next ) => {
         } = req.body;
 
         if( password.length < 8 || !/\d/.test( password ) ){
-            return res.status( 400 ).json({ message: `Password length must be 8 characters long and include at least one number` });
+            return res.status(400).json({ message: 'Password length must be 8 characters long and include at least one number' });
         }
 
         const hashedPassword = await bcrypt.hash( password, 12 );
@@ -88,7 +89,11 @@ router.post( '/create', async ( req, res, next ) => {
 
     } catch (error) {
         console.error('Error creating user:', error);
-        res.status(500).json({ error: 'An error occurred while creating the user.' });
+        if( error instanceof ExpressError ){
+            res.status( error.statusCode ).json({ error: error.message });
+        }else {
+            res.status(500).json({ error: 'An error occurred while creating the user.' });
+        }
         next(error);
     }
 });

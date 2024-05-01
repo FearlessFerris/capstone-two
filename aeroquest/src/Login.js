@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 
+import axios from 'axios';
 
 // Components & Necessary Files 
 
@@ -28,13 +29,13 @@ function Login() {
         }));
     };
 
-    const handleSubmit = ( e ) => {
+    const handleSubmit = async ( e ) => {
         e.preventDefault();
         setFormData( initialState );
         const { username, password } = formData;
         // setMessage( `Welcome back ${ username }, hope you are well today!` )
         try{
-            
+            const response = await axios.post( '/users/login', formData );
         }
         catch( error ){
             console.error( error.response.data.message );
