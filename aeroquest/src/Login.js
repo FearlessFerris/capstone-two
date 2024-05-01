@@ -31,8 +31,14 @@ function Login() {
     const handleSubmit = ( e ) => {
         e.preventDefault();
         setFormData( initialState );
-        const username = formData.username;
-        setMessage( `Welcome back ${ username }, hope you are well today!` )
+        const { username, password } = formData;
+        // setMessage( `Welcome back ${ username }, hope you are well today!` )
+        try{
+            
+        }
+        catch( error ){
+            console.error( error.response.data.message );
+        }
     };
 
     return(
