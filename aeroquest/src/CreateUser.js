@@ -3,6 +3,7 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button } from '@mui/material';
 import axios from 'axios';
 
@@ -19,6 +20,7 @@ axios.defaults.baseURL = 'http://localhost:5000'; // Or whatever URL your backen
 
 // Create User Component 
 function CreateUser() {
+    const navigate = useNavigate();
 
     const initialState = {
         username: '',
@@ -68,6 +70,7 @@ function CreateUser() {
             const response = await axios.post( '/users/create', formDataToSend );
             console.log(response.data);
             setMessage(`Congratulations ${formData.username}, you have successfully created an account!`);
+            navigate('/', { state: { message: `Congratulations ${formData.username}, you have successfully created an account!` } });
             setFormData(initialState);
         } catch (error) {
             console.error('Error creating user:', error);
