@@ -55,7 +55,7 @@ function NavBar() {
                     
                     <Typography 
                     component = { Link } 
-                    to = '/login' 
+                    to = '/users/login' 
                     color = 'white'
                     sx = {{ 
                         color: 'white', 

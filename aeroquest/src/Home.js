@@ -3,13 +3,18 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Router, Route, Link, useLocation } from 'react-router-dom';
+
 
 // Components & Necessary Files 
 import SearchBar from './SearchBar';
 
+
 // Homepage Component 
-function Home({ message }) {
+function Home() {
+
+    const location = useLocation();
+    const message = location.state?.message;
 
     return(
         <div className = 'homepage-container'>

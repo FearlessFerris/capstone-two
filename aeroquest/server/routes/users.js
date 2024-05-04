@@ -8,18 +8,19 @@ const axios = require( 'axios' );
 const bcrypt = require( 'bcrypt' );
 const db = require( '../db' );
 const ExpressError = require( '../ExpressError' );
+const jwt = require( 'jsonwebtoken' );
+const { JWT_SECRET } = process.env;
 
 // Routes 
 
-router.get( '/', ( req, res ) => {
-    return res.send( 'Welcome to the users homepage!!!' );
-});
 
 
 // Login a User Account 
 router.post( '/login', async ( req, res, next ) => {
     try{
         const { username, password } = req.body;
+        console.log( req.body );
+        console.log( JWT_SECRET );
         if( !username || !password ){
             return res.status( 400 ).json({ message: 'Username and Password are required!' });
         }
@@ -27,11 +28,25 @@ router.post( '/login', async ( req, res, next ) => {
         const query = `SELECT id, username, password FROM users WHERE username = $1`;
         const result = await db.query( query, [ username ] );
         console.log( result.rows[0] );
-        
 
+        if( result.rows.length === 0 ){
+            return res.status( 404 ).json({ message: `Username: ${ username }, was not found` });
+        }
+
+        const user = result.rows[0];
+        const correctPassword = await bcrypt.compare( password, user.password );
+
+        if( !correctPassword ){
+            return res.status( 401 ).json({ message: `Incorrect Username or Passowrd` });
+        }
+
+        const token = jwt.sign( { userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1hr' });
+        console.log('JWT_SECRET:', JWT_SECRET);
+        return res.status( 200 ).json({ message: `Welcome back ${ user.username }`, token });
     } 
     catch( error ){
         console.error( error );
+        return res.status(500).json({ message: 'An error occurred while processing your request' });
     }
 });
 

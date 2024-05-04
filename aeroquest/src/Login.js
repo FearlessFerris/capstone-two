@@ -3,15 +3,20 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button } from '@mui/material';
 
 import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:5000';
 
 // Components & Necessary Files 
 
 
 // Login Component 
 function Login() {
+
+    const navigate = useNavigate();
 
     const initialState = {
         username: '',
@@ -31,11 +36,12 @@ function Login() {
 
     const handleSubmit = async ( e ) => {
         e.preventDefault();
-        setFormData( initialState );
+        // setFormData( initialState );
         const { username, password } = formData;
-        // setMessage( `Welcome back ${ username }, hope you are well today!` )
         try{
             const response = await axios.post( '/users/login', formData );
+            console.log( `This is the data: ${ response.data }` );
+            navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
         }
         catch( error ){
             console.error( error.response.data.message );
@@ -63,6 +69,7 @@ function Login() {
                 > { message } </p>
             </div>
         )}
+
         <form>
 
             <Box 

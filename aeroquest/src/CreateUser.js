@@ -69,7 +69,6 @@ function CreateUser() {
         try {
             const response = await axios.post( '/users/create', formDataToSend );
             console.log(response.data);
-            setMessage(`Congratulations ${formData.username}, you have successfully created an account!`);
             navigate('/', { state: { message: `Congratulations ${formData.username}, you have successfully created an account!` } });
             setFormData(initialState);
         } catch (error) {
@@ -103,8 +102,8 @@ function CreateUser() {
             )}
 
         <form>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DateField', 'DatePicker']}>
+            <LocalizationProvider dateAdapter = { AdapterDayjs }>
+            <DemoContainer components = {['DateField', 'DatePicker']}>
             <Box 
                 sx = {{
                     alignItems: 'center',
