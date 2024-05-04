@@ -19,11 +19,17 @@ function Home() {
     return(
         <div className = 'homepage-container'>
         {message && (
-                <div className = 'message-container'>
+                <div className = 'message-container'
+                    style = {{ 
+                        display: 'flex',
+                        margin: '50px',
+                        justifyContent: 'center'
+                }}
+                >
                     <p className = 'message' 
                     sx = {{ 
                         color: 'white',
-                        textAlign: 'center'
+                        textAlign: 'center',
                     }}
                     >{message}</p>
                 </div>

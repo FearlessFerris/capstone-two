@@ -14,7 +14,7 @@ axios.defaults.baseURL = 'http://localhost:5000';
 
 
 // Login Component 
-function Login() {
+function Login({ setIsLoggedIn }) {
 
     const navigate = useNavigate();
 
@@ -36,11 +36,13 @@ function Login() {
 
     const handleSubmit = async ( e ) => {
         e.preventDefault();
-        // setFormData( initialState );
         const { username, password } = formData;
         try{
             const response = await axios.post( '/users/login', formData );
-            console.log( `This is the data: ${ response.data }` );
+            const { token } = response.data;
+            console.log( token );
+            localStorage.setItem( 'token', token );
+            setIsLoggedIn( true );
             navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
         }
         catch( error ){
@@ -60,7 +62,13 @@ function Login() {
         >
 
         { message && (
-            <div className = 'message-container'>
+            <div className = 'message-container'
+                style = {{ 
+                    display: 'flex',
+                    margin: '50px',
+                    justifyContent: 'center'
+            }}
+            >
                 <p
                 sx = {{ 
                     color: 'white',
