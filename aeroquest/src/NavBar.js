@@ -78,6 +78,22 @@ function NavBar({ isLoggedIn, handleLogout }) {
                     }}> 
                     Profile </Typography>
 
+                    <Typography 
+                    component = { Link } 
+                    to = '/users/bookmark' 
+                    color = 'white'
+                    sx = {{ 
+                        color: 'white', 
+                        textDecoration: 'none',
+                        fontSize: '1.8rem', 
+                        '&:hover': {
+                            color: 'black',
+                            backgroundColor: '#006064',
+                            borderRadius: '3px'
+                        },
+                    }}> 
+                    Bookmarks </Typography>
+
                     <Typography
                     component = { Link }
                     to = '/login'

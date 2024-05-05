@@ -11,7 +11,6 @@ const ExpressError = require( '../ExpressError' );
 const jwt = require( 'jsonwebtoken' );
 
 
-
 // Necessary Files 
 const SECRET_KEY = require( '../config' );
 const authorizationMiddleware = require( '../middleware/authorization' );
@@ -43,12 +42,12 @@ router.post( '/login', async ( req, res, next ) => {
             return res.status( 401 ).json({ message: `Incorrect Username or Passowrd` });
         }
 
-        const token = jwt.sign( { userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1hr' });
+        const token = jwt.sign( { id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1hr' });
         return res.status( 200 ).json({ message: `Welcome back ${ user.username }`, token });
     } 
     catch( error ){
-        console.error( error );
         return res.status(500).json({ data: { message: 'An error occurred while processing your request' }});
+        next( error );
     }
 });
 
@@ -102,6 +101,7 @@ router.post( '/create', async ( req, res, next ) => {
         } else {
             console.error('Failed to create user:', result);
             res.status(500).json({ error: 'Failed to create user. Please try again.' });
+            next( error );
         }
         
     } catch (error) {
@@ -119,24 +119,54 @@ router.post( '/create', async ( req, res, next ) => {
 // User Account Profile 
 router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
     try{
-        const { userId } = req.user;
-        const user = await db.query( `SELECT id, username, email, dob, imageUrl, imageUploaded FROM users WHERE id = ?`, [ userId ])
-        if( user.length === 0 ){
+        const userId = req.user.id;
+        const query = `SELECT id, username, email, dob, image_url, image_upload FROM users WHERE id = $1`;
+        const result = await db.query(query, [userId]);
+        if( result.rows.length === 0 ){
             return res.status( 404 ).json({ message: 'User Not Found!' });
         }
 
-        const data = {
-            id: user[0].id,
-            username: user[0].username,
-            email: user[0].email,
-            dob: user[0].dob
-        };
+        const data = result.rows[0];
         return res.status( 200 ).json({ data: data });
     }
     catch( error ){
-        console.error( error );
+        res.status( 500 ).json({ message: 'Internal Server Error' });
+        next( error );
     }
 });
 
+
+// Update User Profile 
+router.put( '/update', authorizationMiddleware, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { username, password, confirmPassword, email, dob, imageUrl } = req.body;
+
+        if ( !username || !email ) {
+            return res.status( 400 ).json({ message: 'Username and email are required fields.' });
+        }
+
+        const user = await db.findById(userId);
+        if ( !user ) {
+            return res.status( 404 ).json({ message: 'User not found.' });
+        }
+
+        user.username = username;
+        user.email = email;
+        user.dob = dob;
+        user.imageUrl = imageUrl;
+
+        if (password && confirmPassword && password === confirmPassword) {
+            user.password = await bcrypt.hash(password, 10); 
+        }
+
+        await user.save();
+
+        res.status(200).json({ message: 'Profile updated successfully.', user: user.toJSON() });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error.' });
+        next( error );
+    }
+});
 
 module.exports = router;

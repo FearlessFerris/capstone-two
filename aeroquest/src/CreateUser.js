@@ -14,6 +14,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateField } from '@mui/x-date-pickers/DateField';
 import dayjs from 'dayjs';
+import EditForm from './EditForm';
 
 axios.defaults.baseURL = 'http://localhost:5000'; // Or whatever URL your backend server is running on
 
@@ -28,7 +29,7 @@ function CreateUser() {
         password: '',
         confirmPassword: '',
         email: '',
-        dob: dayjs('2024-04-17'),
+        dob: dayjs('2024-5-5'),
         imageUrl: '',
         imageUpload: ''
     }
@@ -76,8 +77,6 @@ function CreateUser() {
     
         try {
             const response = await axios.post( '/users/create', formDataToSend );
-            console.log( response.data );
-            console.log( response.data.message );
             const successMessage = `Congratulations ${formData.username}, you have successfully created an account!`
             navigate('/', { state: { message: successMessage }});
             setFormData(initialState);
@@ -94,7 +93,7 @@ function CreateUser() {
                 alignItems: 'center',
                 display: 'flex',
                 flexDirection: 'column',
-                height: '80vh',
+                height: '60vh',
                 justifyContent: 'center',
                 margin: '20vh',
                 position: 'relative'

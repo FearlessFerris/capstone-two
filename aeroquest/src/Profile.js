@@ -4,17 +4,24 @@
 // Dependencies
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar, Card, CardHeader, Typography, Button } from '@mui/material'
+import { Avatar, Box, Card, CardHeader, Typography, TextField, Button } from '@mui/material'
 import axios from 'axios';
 
 
 // Components & Necessary Files 
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateField } from '@mui/x-date-pickers/DateField';
+import dayjs from 'dayjs';
+import EditForm from './EditForm';
 
 
 // Profile Component 
 function Profile() {
 
     const [ profile, setProfile  ] = useState( null );
+    const [ isEditing, setIsEditing ] = useState( false );
 
     useEffect( () => {
         const getProfile = async () => {
@@ -42,15 +49,39 @@ function Profile() {
         getProfile();
     }, []);
 
+
+    const handleEditSubmit = async (editedProfile) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Token is missing!');
+                return;
+            }
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            };
+
+            const response = await axios.put( '/users/profile', editedProfile, config );
+            console.log('Profile updated successfully:', response.data);
+            setIsEditing( false ); 
+            setProfile( editedProfile ); 
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+    };
+
     return(
         <div className = 'profile-container'
             style = {{
                 alignItems: 'center',
                 display: 'flex',
                 justifyContent: 'center',
-                height: '70vh',
+                height: isEditing ? '80vh' : '60vh',
                 flexDirection: 'column',
-                margin: '20vh',
+                margin: '15vh',
                 position: 'relative'
             }}
         >
@@ -68,15 +99,143 @@ function Profile() {
                     justifyContent: 'flex-start',
                     textAlign: 'center',
                     width: '600px',
-                    height: '650px'
+                    height: isEditing ? '100%' : 'auto',
                 }}
             >
             Profile
-                
-                <CardHeader
-                    title = { profile ? `Username: ${ profile.username }` : 'Loading...'}
+
+                <Box 
+                    sx = {{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        width: '100%'
+                    }}
                 >
-                </CardHeader>
+                    <Avatar
+                    alt = { profile ? `${ profile.username }` : 'Loading...'}
+                    src = { profile ? `${profile.image_url }` : 'Loading...'}
+                    sx = {{ 
+                        width: 250, 
+                        height: 250, 
+                        margin: '20px',
+                        border: '3px solid white' 
+                    }}
+                    />
+                </Box>
+                
+                <Box
+                    sx = {{
+                        display: 'flex',
+                        flexDirection: 'row', 
+                        justifyContent: 'center',
+                        width: '100%',
+                        marginBottom: '10px' 
+                    }}
+                >
+                    <Typography
+                        variant = 'h5'
+                        sx = {{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            textShadow: '1px 1px black'
+                        }}
+                    >
+                    Username: 
+                    </Typography>
+                    <Typography 
+                        variant = "h5"
+                    >
+                    { profile ? profile.username : 'Loading...' }
+                    </Typography>
+                </Box>
+
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row', 
+                        justifyContent: 'center', 
+                        width: '100%', 
+                        marginBottom: '10px'
+                    }}
+                >
+                    <Typography
+                        variant = 'h5'
+                        sx = {{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            textShadow: '1px 1px black'
+                        }}
+                    >
+                    Date of Birth: 
+                    </Typography>
+                    <Typography 
+                        variant = "h5"
+                    >
+                    { profile ? profile.dob : 'Loading...' }
+                    </Typography>
+                </Box>
+                
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        width: '100%', 
+                        marginBottom: '10px'
+                    }}
+                >
+                    <Typography
+                        variant = 'h5'
+                        sx = {{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            textShadow: '1px 1px black'
+                        }}
+                    >
+                    Email: 
+                    </Typography>
+                    <Typography 
+                        variant = "h5"
+                    >
+                    { profile ? profile.email : 'Loading...' }
+                    </Typography>
+                </Box>
+
+                
+                { isEditing ? (
+                    <EditForm profile = { profile } onSubmit = { handleEditSubmit } onCancel = { () => setIsEditing( false ) }/>
+                ) : (
+
+                    <Box 
+                    sx = {{
+                        // marginTop: '20px',
+                        textAlign: 'center'
+                    }}
+                    >
+                    <Button 
+                        variant = 'outlined'
+                        color = 'info'
+                        onClick = { () => setIsEditing(( prevState ) => !prevState )}
+                        sx = {{
+                            color: 'cyan',
+                            borderColor: 'cyan',
+                            fontWeight: 'bold',
+                            marginTop: '1vh',
+                            marginBottom: '1vh',
+                            '&:hover': {
+                                color: '#212121',
+                                borderColor: 'white',
+                                backgroundColor: 'cyan',
+                                fontWeight: 'bold'
+                            },
+                        }} 
+                        >
+                    Edit Profile 
+                    </Button>
+                </Box>
+                )}
             </Card>
         </div>
     )
