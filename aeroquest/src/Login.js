@@ -39,11 +39,13 @@ function Login({ setIsLoggedIn }) {
         const { username, password } = formData;
         try{
             const response = await axios.post( '/users/login', formData );
-            const { token } = response.data;
-            console.log( token );
-            localStorage.setItem( 'token', token );
-            setIsLoggedIn( true );
-            navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
+            if( response && response.data ){
+                const { token } = response.data;
+                console.log('Received Token:', token);
+                localStorage.setItem( 'token', token );
+                setIsLoggedIn( true );
+                navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
+            }
         }
         catch( error ){
             console.error( error.response.data.message );

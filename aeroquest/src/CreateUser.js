@@ -91,11 +91,12 @@ function CreateUser() {
     return(
         <div className = 'create-user-container'
             style={{
-                display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
-                height: '80vh',
+                display: 'flex',
                 flexDirection: 'column',
+                height: '80vh',
+                justifyContent: 'center',
+                margin: '20vh',
                 position: 'relative'
             }}
             >
@@ -122,13 +123,13 @@ function CreateUser() {
                     border: '3px solid white',
                     color: 'cyan',
                     display: 'flex',
+                    flexDirection: 'column',
                     fontSize: 'xx-large',
                     fontWeight: 'bold',
-                    flexDirection: 'column',
+                    height: '650px',
                     justifyContent: 'flex-start',
                     textAlign: 'center',
-                    width: '600px',
-                    height: '650px'
+                    width: '600px'
                 }}
                 > Create New User
                 

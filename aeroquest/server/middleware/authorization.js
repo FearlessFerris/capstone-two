@@ -1,5 +1,6 @@
 // Authentification Middleware Implementation 
 
+
 // Dependencies 
 const jwt = require( 'jsonwebtoken' );
 
@@ -8,20 +9,24 @@ const jwt = require( 'jsonwebtoken' );
 const SECRET_KEY = require( '../config' );
 
 
-const authorizationMiddleware = ( req, res, next ) => {
+
+// Authorization Middleware
+const authorizationMiddleware = (req, res, next) => {
     const token = req.headers.authorization;
-    if( !token ){
-        return res.status( 401 ).json({ message: 'Authorization Token is required!' })
+    if (!token || !token.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Authorization Token is required!' });
     }
 
-    try{
-        const decoded = jwt.verify( token, SECRET_KEY );
+    const tokenWithoutBearer = token.split(' ')[1];
+    try {
+        const decoded = jwt.verify(tokenWithoutBearer, SECRET_KEY);
         req.user = decoded;
+        console.log( decoded );
         next();
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid Token' });
     }
-    catch( error ){
-        return res.status( 401 ).json({ message: 'Invalid Token' });
-    }
-}
+};
+
 
 module.exports = authorizationMiddleware;

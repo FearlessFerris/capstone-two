@@ -16,6 +16,7 @@ const jwt = require( 'jsonwebtoken' );
 const SECRET_KEY = require( '../config' );
 const authorizationMiddleware = require( '../middleware/authorization' );
 
+
 // Routes 
 
 
@@ -47,18 +48,7 @@ router.post( '/login', async ( req, res, next ) => {
     } 
     catch( error ){
         console.error( error );
-        return res.status(500).json({ message: 'An error occurred while processing your request' });
-    }
-});
-
-
-// Logout a User Account 
-router.post( '/logout', async ( req, res, next ) => {
-    try{
-
-    }
-    catch( error ){
-        console.error( error );
+        return res.status(500).json({ data: { message: 'An error occurred while processing your request' }});
     }
 });
 
@@ -99,10 +89,10 @@ router.post( '/create', async ( req, res, next ) => {
             query += `, $${i}`;
         }
         query += `) RETURNING *;`;
-
+        
         console.log('Database insertion query:', query);
         console.log('Database insertion values:', values);
-
+        
         const result = await db.query(query, values);
         if (result.rowCount > 0) {
             console.log('User created successfully:', result.rows[0]);
@@ -113,7 +103,7 @@ router.post( '/create', async ( req, res, next ) => {
             console.error('Failed to create user:', result);
             res.status(500).json({ error: 'Failed to create user. Please try again.' });
         }
-
+        
     } catch (error) {
         console.error('Error creating user:', error);
         if( error instanceof ExpressError ){
@@ -124,5 +114,29 @@ router.post( '/create', async ( req, res, next ) => {
         next(error);
     }
 });
+
+
+// User Account Profile 
+router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
+    try{
+        const { userId } = req.user;
+        const user = await db.query( `SELECT id, username, email, dob, imageUrl, imageUploaded FROM users WHERE id = ?`, [ userId ])
+        if( user.length === 0 ){
+            return res.status( 404 ).json({ message: 'User Not Found!' });
+        }
+
+        const data = {
+            id: user[0].id,
+            username: user[0].username,
+            email: user[0].email,
+            dob: user[0].dob
+        };
+        return res.status( 200 ).json({ data: data });
+    }
+    catch( error ){
+        console.error( error );
+    }
+});
+
 
 module.exports = router;

@@ -64,7 +64,7 @@ function NavBar({ isLoggedIn, handleLogout }) {
                     <>
                     <Typography
                     component = { Link }
-                    to = '/profile'
+                    to = '/users/profile'
                     color = 'white'
                     sx = {{
                         color: 'white', 
