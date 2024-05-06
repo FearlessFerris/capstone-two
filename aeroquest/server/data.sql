@@ -27,59 +27,34 @@ CREATE TABLE searches (
 );
 
 
--- Create Airplane Table 
-CREATE TABLE airplanes (
+-- Create API Response Table 
+CREATE TABLE api_responses (
     id SERIAL PRIMARY KEY,
-    registration_number VARCHAR( 255 ) NOT NULL,
-    production_line VARCHAR( 255 ) NOT NULL,
-    model_name VARCHAR( 255 ) NOT NULL,
-    model_code VARCHAR( 255 ) NOT NULL, 
-    icao_code_hex VARCHAR( 255 ) NOT NULL, 
-    construction_number VARCHAR( 255 ) NOT NULL, 
-    rollout_date DATE NOT NULL,
-    first_flight_date DATE NOT NULL, 
-    delivery_date DATE NOT NULL,
-    plane_series VARCHAR( 255 ) NOT NULL,
-    plane_owner VARCHAR( 255 ) NOT NULL, 
-    engine_count INTEGER NOT NULL, 
-    engines_type VARCHAR( 255 ) NOT NULL, 
-    plane_age INTEGER NOT NULL, 
-    plane_status VARCHAR( 255 ) NOT NULL,
-    date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    user_id INTEGER REFERENCES users(id),
+    endpoint VARCHAR(100) NOT NULL,
+    response_data JSONB NOT NULL,
+    response_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
-
--- Create Airline Table 
-CREATE TABLE airlines (
+-- Create Bookmarks / Favorites Table 
+CREATE TABLE bookmarks (
     id SERIAL PRIMARY KEY,
-    airline_name VARCHAR( 100 ) NOT NULL, 
-    iata_code VARCHAR( 3 ) NOT NULL, 
-    callsign VARCHAR( 50 ) NOT NULL, 
-    status VARCHAR( 10 ) NOT NULL, 
-    fleet_size INTEGER NOT NULL,
-    fleet_average_age DECIMAL( 5, 2 ) NOT NULL, 
-    date_founded DATE NOT NULL, 
-    country_name VARCHAR( 100 ) NOT NULL 
+    user_id INTEGER REFERENCES users(id),
+    api_response_id INTEGER REFERENCES api_responses(id),
+    label VARCHAR(100),
+    notes TEXT
 );
 
 
-
--- Create Airport Table 
-CREATE TABLE airports (
+-- Create Activity Logs Table 
+CREATE TABLE activity_logs (
     id SERIAL PRIMARY KEY,
-    airport_name VARCHAR(255) NOT NULL,
-    iata_code VARCHAR(3) NOT NULL,
-    icao_code VARCHAR(4) NOT NULL,
-    latitude DECIMAL(8, 5) NOT NULL,
-    longitude DECIMAL(9, 5) NOT NULL,
-    geoname_id VARCHAR(10) NOT NULL,
-    timezone VARCHAR(50) NOT NULL,
-    gmt VARCHAR(5) NOT NULL,
-    phone_number VARCHAR(20),
-    country_name VARCHAR(255) NOT NULL,
-    country_iso2 VARCHAR(2) NOT NULL,
-    city_iata_code VARCHAR(3) NOT NULL
+    user_id INTEGER REFERENCES users(id),
+    action_type VARCHAR(100),
+    action_details JSONB,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 

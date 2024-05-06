@@ -12,7 +12,7 @@ const jwt = require( 'jsonwebtoken' );
 
 
 // Necessary Files 
-const SECRET_KEY = require( '../config' );
+const { ACCESS_KEY, SECRET_KEY } = require( '../config' );
 const authorizationMiddleware = require( '../middleware/authorization' );
 
 
@@ -46,8 +46,8 @@ router.post( '/login', async ( req, res, next ) => {
         return res.status( 200 ).json({ message: `Welcome back ${ user.username }`, token });
     } 
     catch( error ){
+        console.error( 'Here is your error:', error );
         return res.status(500).json({ data: { message: 'An error occurred while processing your request' }});
-        next( error );
     }
 });
 

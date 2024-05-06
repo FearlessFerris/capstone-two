@@ -21,12 +21,12 @@ app.use( express.urlencoded({ extended: true }) );
 
 
 // Routers 
-const airplanesRouter = require( './routes/airplanes' );
+const searchRouter = require( './routes/search' );
 const userRouter = require( './routes/users' );
 
 
 // Route Prefix's 
-app.use( '/airplanes', airplanesRouter );
+app.use( '/search', searchRouter );
 app.use( '/users', userRouter );
 
 

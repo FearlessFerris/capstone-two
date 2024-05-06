@@ -6,7 +6,7 @@ const jwt = require( 'jsonwebtoken' );
 
 
 // Components / Necessary Files 
-const SECRET_KEY = require( '../config' );
+const { ACCESS_KEY, SECRET_KEY} = require( '../config' );
 
 
 
