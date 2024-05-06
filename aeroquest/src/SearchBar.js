@@ -25,9 +25,13 @@ function SearchBar() {
     const handleSubmit = async ( e ) => {
         e.preventDefault();
         try{
-            const response = await axios.get( `/search/airplanes?searchTerm=${ searchTerm }` )
-            console.log( response.data );
-            setSearchResults( response.data.data );
+            const response = await axios.get( `/search/airplanes`, {
+                params: {
+                    searchTerm,
+                    offset: searchResults.length,
+                }
+            })
+            setSearchResults(( previousResults ) => [ ...previousResults, ...response.data.data ]);
         }
         catch( error ){
             console.error( `Error Submitting Search Term`, error );
@@ -35,7 +39,6 @@ function SearchBar() {
     }
 
     return(
-
         <div>
 
         <div className = 'searchbar-container'
@@ -48,6 +51,7 @@ function SearchBar() {
             }}
             >
 
+            <form onSubmit = { handleSubmit }>
             <Box 
                 sx ={{
                     alignItems: 'center',
@@ -137,12 +141,13 @@ function SearchBar() {
                         },
                         transition: 'none'
                     }} 
-                    onClick={handleSubmit}
-                    > 
+                    onClick = { handleSubmit }
+                > 
                 Search 
                 </Button>
                 </Box>
             </Box>
+        </form>
         </div>
         <InformationBlock data = { searchResults } />
     </div>

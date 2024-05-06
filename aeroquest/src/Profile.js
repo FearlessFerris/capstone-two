@@ -26,7 +26,7 @@ function Profile() {
     useEffect( () => {
         const getProfile = async () => {
             try{
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem( 'token' );
                 if (!token) {
                     console.error('Token is missing!');
                     return;
@@ -39,7 +39,6 @@ function Profile() {
                 };
 
                 const response = await axios.get( '/users/profile', config );
-                console.log( response.data );
                 setProfile( response.data.data );
             }
             catch( error ){
@@ -50,7 +49,7 @@ function Profile() {
     }, []);
 
 
-    const handleEditSubmit = async (editedProfile) => {
+    const handleEditSubmit = async ( editedProfile ) => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -210,7 +209,6 @@ function Profile() {
 
                     <Box 
                     sx = {{
-                        // marginTop: '20px',
                         textAlign: 'center'
                     }}
                     >

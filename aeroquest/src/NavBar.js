@@ -8,11 +8,12 @@ import { AppBar, Avatar, Box, Toolbar, Typography, Button } from '@mui/material'
 
 // Components & Necessary Files 
 
+
 // NavBar Component 
 function NavBar({ isLoggedIn, handleLogout, userProfile }) {
 
     const navigate = useNavigate();
-    const avatarUrl = userProfile?.profile?.image_url;
+    const avatarUrl = userProfile?.image_url;
 
     const handleLogoutClick = () => {
         handleLogout();
@@ -113,13 +114,16 @@ function NavBar({ isLoggedIn, handleLogout, userProfile }) {
                     > 
                     Logout </Typography>
                     
-                    <Avatar
+                    { userProfile && (
+
+                        <Avatar
                         alt = 'User Avatar'
                         src = { avatarUrl } 
                         sx = {{ 
                             width: 40, 
                             height: 40 }} 
-                    />
+                            />
+                    )}
 
                     </>
 

@@ -26,7 +26,6 @@ function App({ history }) {
   useEffect( () => {
     const token = localStorage.getItem( 'token' );
     if( token ){
-      console.log( token );
       setIsLoggedIn( true );
       fetchUserProfile( token );
     }
@@ -38,11 +37,11 @@ function App({ history }) {
 
   const fetchUserProfile = async (token) => {
     try {
-      const response = await axios.get('api/user/profile', {
+      const response = await axios.get( '/users/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log( response.data );
-      setUserProfile(response.data); // Set user profile data including avatar URL
+      console.log( response.data.data );
+      setUserProfile( response.data.data ); 
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
