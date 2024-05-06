@@ -79,7 +79,7 @@ function Profile() {
                 alignItems: 'center',
                 display: 'flex',
                 justifyContent: 'center',
-                height: isEditing ? '80vh' : '60vh',
+                height: isEditing ? '65rem' : '38rem',
                 flexDirection: 'column',
                 margin: '15vh',
                 position: 'relative'
@@ -114,7 +114,7 @@ function Profile() {
                 >
                     <Avatar
                     alt = { profile ? `${ profile.username }` : 'Loading...'}
-                    src = { profile ? `${profile.image_url }` : 'Loading...'}
+                    src = { profile ? `${ profile.image_url }` : 'Loading...'}
                     sx = {{ 
                         width: 250, 
                         height: 250, 

@@ -4,14 +4,15 @@
 // Dependencies 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material';
+import { AppBar, Avatar, Box, Toolbar, Typography, Button } from '@mui/material';
 
 // Components & Necessary Files 
 
 // NavBar Component 
-function NavBar({ isLoggedIn, handleLogout }) {
+function NavBar({ isLoggedIn, handleLogout, userProfile }) {
 
     const navigate = useNavigate();
+    const avatarUrl = userProfile?.profile?.image_url;
 
     const handleLogoutClick = () => {
         handleLogout();
@@ -111,7 +112,15 @@ function NavBar({ isLoggedIn, handleLogout }) {
                     onClick = { handleLogoutClick }
                     > 
                     Logout </Typography>
-    
+                    
+                    <Avatar
+                        alt = 'User Avatar'
+                        src = { avatarUrl } 
+                        sx = {{ 
+                            width: 40, 
+                            height: 40 }} 
+                    />
+
                     </>
 
                     ) : (

@@ -60,8 +60,8 @@ function SearchBar() {
                     backgroundColor: '#212121',
                     flexDirection: 'column',
                     justifyContent: 'flex-start',
-                    width: '600px',
-                    height: '15vh',
+                    width: '38rem',
+                    height: '11rem',
                     margin: 'auto'
                 }}
                 > AeroQuest 
@@ -77,7 +77,7 @@ function SearchBar() {
                         backgroundColor: '#212121',
                         flexDirection: 'row', 
                         justifyContent: 'center',
-                        width: '18vw',
+                        width: '36rem',
                         height: '15vh',
                         margin: 'auto',
                     }}
@@ -97,7 +97,7 @@ function SearchBar() {
                     }}
                     sx={{
                         textAlign: 'center',
-                        width: '17vw',
+                        width: '20rem',
                         color: 'white',
                         '& .MuiOutlinedInput-root .MuiInputLabel-root': {
                             color: 'white',
@@ -128,7 +128,7 @@ function SearchBar() {
                     sx={{
                         color: 'cyan',
                         borderColor: 'cyan',
-                        fontSize: '1.5rem',
+                        fontSize: '1.6rem',
                         '&:hover': {
                             color: '#212121',
                             borderColor: 'white',

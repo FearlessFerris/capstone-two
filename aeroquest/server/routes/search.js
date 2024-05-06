@@ -9,7 +9,7 @@ const axios = require( 'axios' );
 
 // Necessary Files 
 const db = require( '../db' );
-const { ACCESS_KEY, SECRET_KEY } = require( '../config' );
+const { SECRET_KEY, ACCESS_KEY } = require( '../config' );
 
 
 
