@@ -6,14 +6,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppBar, Avatar, Box, Toolbar, Typography, Button } from '@mui/material';
 
+
 // Components & Necessary Files 
 
 
 // NavBar Component 
-function NavBar({ isLoggedIn, handleLogout, userProfile }) {
+function NavBar({ isLoggedIn, handleLogout }) {
 
     const navigate = useNavigate();
-    const avatarUrl = userProfile?.image_url;
 
     const handleLogoutClick = () => {
         handleLogout();
@@ -113,18 +113,6 @@ function NavBar({ isLoggedIn, handleLogout, userProfile }) {
                     onClick = { handleLogoutClick }
                     > 
                     Logout </Typography>
-                    
-                    { userProfile && (
-
-                        <Avatar
-                        alt = 'User Avatar'
-                        src = { avatarUrl } 
-                        sx = {{ 
-                            width: 40, 
-                            height: 40 }} 
-                            />
-                    )}
-
                     </>
 
                     ) : (
@@ -160,8 +148,8 @@ function NavBar({ isLoggedIn, handleLogout, userProfile }) {
                         },
                     }}>
                     Create </Typography>
-                    </>
-                    )}
+                </>
+                )}
                 </Box>
             </AppBar>
             </div>

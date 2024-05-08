@@ -4,6 +4,7 @@
 // Dependencies 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Switch, withRouter } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 
 
@@ -22,10 +23,14 @@ function App({ history }) {
 
   const [ isLoggedIn, setIsLoggedIn ] = useState( false );
   const [ userProfile, setUserProfile ] = useState( null );
+  const [ decodedToken, setDecodedToken ] = useState( null );
   
   useEffect( () => {
     const token = localStorage.getItem( 'token' );
+    console.log( token );
     if( token ){
+      const decodedToken = jwtDecode( token );
+      setDecodedToken( decodedToken );
       setIsLoggedIn( true );
       fetchUserProfile( token );
     }
@@ -35,12 +40,13 @@ function App({ history }) {
     }
   }, []);
 
-  const fetchUserProfile = async (token) => {
+  const fetchUserProfile = async ( token ) => {
     try {
       const response = await axios.get( '/users/profile', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${ token }` },
       });
-      console.log( response.data.data );
+      console.log( `Response.data`, response.data );
+      console.log( `Response.data.data`, response.data.data );
       setUserProfile( response.data.data ); 
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -58,7 +64,7 @@ function App({ history }) {
   return (
     <div className = 'application-container'>
       <BrowserRouter>
-        <NavBar isLoggedIn = { isLoggedIn } handleLogout = { handleLogout } userProfile = { userProfile } />
+        <NavBar  isLoggedIn = { isLoggedIn } handleLogout = { handleLogout } userProfile = { userProfile } decodedToken = { decodedToken }/>
           <Routes> 
             <Route path = '/' element = { <Home /> } />
             <Route path = '/users/profile' element = { <Profile /> } />

@@ -28,8 +28,9 @@ router.post( '/login', async ( req, res, next ) => {
             return res.status( 400 ).json({ message: 'Username and Password are required!' });
         }
 
-        const query = `SELECT id, username, password FROM users WHERE username = $1`;
+        const query = `SELECT id, username, password, image_url FROM users WHERE username = $1`;
         const result = await db.query( query, [ username ] );
+        console.log( `Result:`, result );
 
         if( result.rows.length === 0 ){
             return res.status( 404 ).json({ message: `Username: ${ username }, was not found` });
@@ -42,7 +43,7 @@ router.post( '/login', async ( req, res, next ) => {
             return res.status( 401 ).json({ message: `Incorrect Username or Passowrd` });
         }
 
-        const token = jwt.sign( { id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1hr' });
+        const token = jwt.sign( { id: user.id, username: user.username, image_url: user.image_url }, SECRET_KEY, { expiresIn: '1hr' });
         return res.status( 200 ).json({ message: `Welcome back ${ user.username }`, token });
     } 
     catch( error ){

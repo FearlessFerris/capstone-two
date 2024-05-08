@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
 
 import axios from 'axios';
 
@@ -44,6 +45,10 @@ function Login({ setIsLoggedIn }) {
                 console.log('Received Token:', token);
                 localStorage.setItem( 'token', token );
                 setIsLoggedIn( true );
+
+                const decodedToken = jwtDecode( token );
+                console.log( `Decoded Token:`, decodedToken );
+
                 navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
             }
         }
