@@ -11,7 +11,7 @@ import { AppBar, Avatar, Box, Toolbar, Typography, Button } from '@mui/material'
 
 
 // NavBar Component 
-function NavBar({ isLoggedIn, handleLogout }) {
+function NavBar({ isLoggedIn, handleLogout, clearSearchResults }) {
 
     const navigate = useNavigate();
 
@@ -19,6 +19,11 @@ function NavBar({ isLoggedIn, handleLogout }) {
         handleLogout();
         navigate( '/' );
     }
+
+    const handleHomeClick = () => {
+        clearSearchResults();
+        navigate( '/' )
+    };
 
     return(
         <div className = 'navbar-container'> 
@@ -43,7 +48,9 @@ function NavBar({ isLoggedIn, handleLogout }) {
                             backgroundColor: '#006064',
                             borderRadius: '3px'
                         },
-                    }}> 
+                    }}
+                    onClick = {{ handleHomeClick }}
+                    > 
                     Home </Typography>
 
                     <Typography 

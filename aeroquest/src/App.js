@@ -24,10 +24,10 @@ function App({ history }) {
   const [ isLoggedIn, setIsLoggedIn ] = useState( false );
   const [ userProfile, setUserProfile ] = useState( null );
   const [ decodedToken, setDecodedToken ] = useState( null );
+  const [ searchResults, setSearchResults ] = useState([]);
   
   useEffect( () => {
     const token = localStorage.getItem( 'token' );
-    console.log( token );
     if( token ){
       const decodedToken = jwtDecode( token );
       setDecodedToken( decodedToken );
@@ -45,7 +45,6 @@ function App({ history }) {
       const response = await axios.get( '/users/profile', {
         headers: { Authorization: `Bearer ${ token }` },
       });
-      console.log( `Response.data`, response.data );
       console.log( `Response.data.data`, response.data.data );
       setUserProfile( response.data.data ); 
     } catch (error) {
@@ -60,11 +59,15 @@ function App({ history }) {
     history.push( '/' );
   }
 
+  const clearSearchResults = () => {
+    console.log( 'Clearing Search Results' )
+    setSearchResults([]);
+  }
   
   return (
     <div className = 'application-container'>
       <BrowserRouter>
-        <NavBar  isLoggedIn = { isLoggedIn } handleLogout = { handleLogout } userProfile = { userProfile } decodedToken = { decodedToken }/>
+        <NavBar  isLoggedIn = { isLoggedIn } handleLogout = { handleLogout } clearSearchResults = { clearSearchResults }/>
           <Routes> 
             <Route path = '/' element = { <Home /> } />
             <Route path = '/users/profile' element = { <Profile /> } />

@@ -2,8 +2,8 @@
 
 
 // Dependencies 
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Router, Route, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Router, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 
 
 // Components & Necessary Files 
@@ -13,8 +13,14 @@ import SearchBar from './SearchBar';
 // Homepage Component 
 function Home() {
 
+    const navigate = useNavigate();
     const location = useLocation();
     const message = location.state?.message;
+    const [ searchResults, setSearchResults ] = useState([]);
+
+    const clearSearchResults = () => {
+        setSearchResults([]);
+    }
 
     return(
         <div className = 'homepage-container'>
@@ -34,7 +40,7 @@ function Home() {
                     >{message}</p>
                 </div>
             )}
-            <SearchBar />
+            <SearchBar searchResults = { searchResults } setSearchResults = { setSearchResults }/>
         </div>
     )
 }

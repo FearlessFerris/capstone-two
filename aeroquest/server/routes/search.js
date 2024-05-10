@@ -25,13 +25,16 @@ router.get( '/airplanes', async ( req, res, next ) => {
     try{
         const searchTerm = req.query.searchTerm;
         const offset = req.query.offset || 0;
-        const response = await axios.get( `${ AIRPLANES_ENDPOINT_BASE }?access_key=${ ACCESS_KEY }&search=${ searchTerm }&limit=10&offset=${ offset }` );
+        const response = await axios.get( `${ AIRPLANES_ENDPOINT_BASE }?access_key=${ ACCESS_KEY }&search=${ searchTerm }&limit=30&offset=${ offset }` );
         res.status(200).json({ message: 'Aircraft Information', data: response.data.data });
     }
     catch( error ){
         console.error( `Error:`, error.response.data.error );
     }
 });
+
+
+
 
 
 module.exports = router;

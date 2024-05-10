@@ -8,36 +8,49 @@ import axios from 'axios';
 
 
 // Components & Necessary Files 
-import InformationBlock from './InformationBlock';
+import AircraftInformationBlock from './AircraftInformationBlock';
 
 
 // SearchBar Component 
-function SearchBar() {
+function SearchBar({ searchResults, setSearchResults }) {
 
     const [ searchTerm, setSearchTerm ] = useState( '' );
-    const [ searchResults, setSearchResults ] = useState([]);
+    const [ offset, setOffset ] = useState( 0 );
+    const [ loading, setLoading ] = useState( false );
 
     const handleChange = ( e ) => {
         const value = e.target.value;
         setSearchTerm( value );
-    } 
+    }; 
 
     const handleSubmit = async ( e ) => {
         e.preventDefault();
+        setOffset( 0 );
+        setSearchResults([]);
+        fetchResults();
+    };
+
+    const fetchResults = async () => {
         try{
+            setLoading( true );
             const response = await axios.get( `/search/airplanes`, {
                 params: {
                     searchTerm,
-                    offset: searchResults.length,
+                    offset,
+                    limit: 10,
                 }
             })
-            setSearchResults(( previousResults ) => [ ...previousResults, ...response.data.data ]);
+            setSearchResults( ( previousResults ) => [ ...previousResults, ...response.data.data ])
+            setOffset( ( previousOffset ) => previousOffset + 10 );
         }
         catch( error ){
-            console.error( `Error Submitting Search Term`, error );
+            console.error( `Error Fetching Results of ${ searchTerm }` );
+        }
+        finally{
+            setLoading( false );
         }
     }
-
+    
     return(
         <div>
 
@@ -149,7 +162,7 @@ function SearchBar() {
             </Box>
         </form>
         </div>
-        <InformationBlock data = { searchResults } />
+        <AircraftInformationBlock data = { searchResults } />
     </div>
     )
 }

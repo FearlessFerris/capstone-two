@@ -19,7 +19,6 @@ const authorizationMiddleware = require( '../middleware/authorization' );
 // Routes 
 
 
-
 // Login a User Account 
 router.post( '/login', async ( req, res, next ) => {
     try{

@@ -11,14 +11,24 @@ import { AirplanemodeActive } from '@mui/icons-material';
 
 
 // Information Block Component 
-function InformationBlock({ data }) {
+function AircraftInformationBlock({ data }) {
+
+
+  const [ getFullDetails, setGetFullDetails ] = useState( null );
+  const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( false );
+
+
+  const displayFullDetails = ( index ) => {
+    setGetFullDetails( index === setGetFullDetails ? null : index );
+    setSelectedBoxIndex( true );
+  }
 
 
     return(
         <div className = "information-block">
-      {data.map((item) => (
+      {data.map(( item, index ) => (
         <Card 
-            key={item.id} 
+            key={ index } 
             sx={{ 
                   alignItems: 'center',
                   border: '3px solid #212121',
@@ -36,7 +46,8 @@ function InformationBlock({ data }) {
                   textAlign: 'center',
                   width: '38vw',
         }}
-        >
+        onClick = { displayFullDetails }
+        >  
           <CardContent>
             <Typography
               variant = 'h4'
@@ -66,6 +77,10 @@ function InformationBlock({ data }) {
             >
             Plane Owner: { item.plane_owner }
             </Typography>
+
+            { getFullDetails && index === selectedBoxIndex (
+              
+            )}
           </CardContent>
         </Card>
       ))}
@@ -73,4 +88,4 @@ function InformationBlock({ data }) {
     );
 }
 
-export default InformationBlock;
+export default AircraftInformationBlock;
