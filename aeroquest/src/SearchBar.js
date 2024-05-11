@@ -11,6 +11,7 @@ import axios from 'axios';
 
 import AirlinesInformationBlock from './AirlinesInformationBlock';
 import AirplanesInformationBlock from './AirplanesInformationBlock';
+import AirportsInformationBlock from './AirportsInformationBlock';
 
 
 // SearchBar Component 
@@ -69,6 +70,8 @@ function SearchBar({ searchResults, setSearchResults }) {
                 return <AirplanesInformationBlock data = { searchResults } />;
             case 'airlines': 
                 return <AirlinesInformationBlock data = { searchResults } />;
+            case 'airports':
+                return <AirportsInformationBlock data = { searchResults } />;
             default:
                 return null;
         }
