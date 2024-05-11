@@ -45,7 +45,6 @@ function App({ history }) {
       const response = await axios.get( '/users/profile', {
         headers: { Authorization: `Bearer ${ token }` },
       });
-      console.log( `Response.data.data`, response.data.data );
       setUserProfile( response.data.data ); 
     } catch (error) {
       console.error('Error fetching user profile:', error);

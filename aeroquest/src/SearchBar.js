@@ -3,12 +3,14 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button } from '@mui/material';
+import { Box, Button, InputLabel, TextField, Slider } from '@mui/material';
 import axios from 'axios';
 
 
 // Components & Necessary Files 
-import AircraftInformationBlock from './AircraftInformationBlock';
+
+import AirlinesInformationBlock from './AirlinesInformationBlock';
+import AirplanesInformationBlock from './AirplanesInformationBlock';
 
 
 // SearchBar Component 
@@ -16,12 +18,22 @@ function SearchBar({ searchResults, setSearchResults }) {
 
     const [ searchTerm, setSearchTerm ] = useState( '' );
     const [ offset, setOffset ] = useState( 0 );
+    const [ limit, setLimit ] = useState( 30 );
     const [ loading, setLoading ] = useState( false );
+    const [ selectedType, setSelectedType ] = useState( 'airplanes' );
 
     const handleChange = ( e ) => {
-        const value = e.target.value;
-        setSearchTerm( value );
+        setSearchTerm( e.target.value );
     }; 
+
+    const handleLimitChange = ( e ) => {
+        setLimit( e.target.value );
+    }
+
+    const handleTypeChange = ( e ) => {
+        setSelectedType( e );
+        setSearchResults([]);
+    }
 
     const handleSubmit = async ( e ) => {
         e.preventDefault();
@@ -33,21 +45,32 @@ function SearchBar({ searchResults, setSearchResults }) {
     const fetchResults = async () => {
         try{
             setLoading( true );
-            const response = await axios.get( `/search/airplanes`, {
+            const response = await axios.get( `/search/${ selectedType }`, {
                 params: {
                     searchTerm,
                     offset,
-                    limit: 10,
+                    limit,
                 }
             })
-            setSearchResults( ( previousResults ) => [ ...previousResults, ...response.data.data ])
-            setOffset( ( previousOffset ) => previousOffset + 10 );
+            setSearchResults( response.data.data );
+            setOffset( ( previousOffset ) => previousOffset + limit );
         }
         catch( error ){
             console.error( `Error Fetching Results of ${ searchTerm }` );
         }
         finally{
             setLoading( false );
+        }
+    }
+
+    const renderInformationBlock = () => {
+        switch( selectedType ) {
+            case 'airplanes':
+                return <AirplanesInformationBlock data = { searchResults } />;
+            case 'airlines': 
+                return <AirlinesInformationBlock data = { searchResults } />;
+            default:
+                return null;
         }
     }
     
@@ -77,8 +100,8 @@ function SearchBar({ searchResults, setSearchResults }) {
                     backgroundColor: '#212121',
                     flexDirection: 'column',
                     justifyContent: 'flex-start',
-                    width: '38rem',
-                    height: '11rem',
+                    width: '43rem',
+                    height: '15rem',
                     margin: 'auto'
                 }}
                 > AeroQuest 
@@ -159,10 +182,131 @@ function SearchBar({ searchResults, setSearchResults }) {
                 Search 
                 </Button>
                 </Box>
+                <Box 
+                    sx = {{
+                        alignItems: 'center',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        marginBottom: '1rem',
+                        width: '25rem'
+                    }}
+                >   
+                  <InputLabel 
+                    htmlFor = 'results-slider'
+                    style = {{
+                        color: 'white',
+                        width: '18rem'
+                    }}
+                > 
+                Number of Results </InputLabel>
+                  <Slider 
+                    defaultValue = { 30 }
+                    id = 'results-slider'
+                    min = { 10 }
+                    max = { 100 }
+                    size = 'small'
+                    step = { 10 }
+                    style = {{
+                        color: 'cyan'
+                    }}
+                    valueLabelDisplay = 'auto'
+                    onClick = { handleLimitChange }
+                >
+                Number of Results 
+                </Slider>  
+                </Box>
+                <Box 
+                    sx = {{
+                        display: 'flex'
+                    }}
+                >
+                  <Button 
+                    type = 'submit'
+                    variant = 'outlined'
+                    color = 'primary'
+                    component = 'span'
+                    sx = {{
+                        color: selectedType === 'airplanes' ? '#212121' : 'cyan',
+                        backgroundColor: selectedType === 'airplanes' ? 'cyan' : '#212121',
+                        borderColor: 'cyan',
+                        fontWeight: 'bold',
+                        marginBottom: '1rem',
+                        '&:hover': {
+                            color: '#212121',
+                            borderColor: 'white',
+                            backgroundColor: 'cyan',
+                            fontWeight: 'bold'
+                        },
+                    }}
+                    onClick = { () => handleTypeChange( 'airplanes' ) }
+                    > 
+                    Airplanes 
+                    </Button>
+                <Box 
+                    sx = {{
+                        display: 'flex'
+                    }}
+                >
+                  <Button 
+                    type = 'submit'
+                    variant = 'outlined'
+                    color = 'primary'
+                    component = 'span'
+                    sx = {{
+                        color: selectedType === 'airlines' ? '#212121' : 'cyan',
+                        backgroundColor: selectedType === 'airlines' ? 'cyan' : '#212121',
+                        borderColor: 'cyan',
+                        fontWeight: 'bold',
+                        marginBottom: '1rem',
+                        '&:hover': {
+                            color: '#212121',
+                            borderColor: 'white',
+                            backgroundColor: 'cyan',
+                            fontWeight: 'bold'
+                        },
+                    }}
+                    onClick = { () => handleTypeChange( 'airlines' ) }
+                    > 
+                    Airlines 
+                </Button>
+                <Box 
+                    sx = {{
+                        display: 'flex'
+                    }}
+                >
+                  <Button 
+                    type = 'submit'
+                    variant = 'outlined'
+                    color = 'primary'
+                    component = 'span'
+                    sx = {{
+                        color: selectedType === 'airports' ? '#212121' : 'cyan',
+                        backgroundColor: selectedType === 'airports' ? 'cyan' : '#212121',
+                        borderColor: 'cyan',
+                        fontWeight: 'bold',
+                        marginBottom: '1rem',
+                        '&:hover': {
+                            color: '#212121',
+                            borderColor: 'white',
+                            backgroundColor: 'cyan',
+                            fontWeight: 'bold'
+                        },
+                    }}
+                    onClick = { () => handleTypeChange( 'airports' ) }
+                    > 
+                    Airports 
+                    </Button>
+                </Box>
+                </Box>
+                </Box>
             </Box>
         </form>
         </div>
-        <AircraftInformationBlock data = { searchResults } />
+        <div 
+            key = { selectedType }
+        >
+            { renderInformationBlock() }
+        </div>
     </div>
     )
 }
