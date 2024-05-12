@@ -21,12 +21,14 @@ app.use( express.urlencoded({ extended: true }) );
 
 
 // Routers 
+const apiResponse = require( './routes/apiResponse' );
 const bookmarkRouter = require( './routes/bookmarks' );
 const searchRouter = require( './routes/search' );
 const userRouter = require( './routes/users' );
 
 
 // Route Prefix's 
+app.use( '/api', apiResponse );
 app.use( '/bookmark', bookmarkRouter );
 app.use( '/search', searchRouter );
 app.use( '/users', userRouter );

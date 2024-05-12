@@ -13,13 +13,13 @@ const { SECRET_KEY, ACCESS_KEY } = require( '../config' );
 // Authorization Middleware
 const authorizationMiddleware = (req, res, next) => {
     const token = req.headers.authorization;
-    if (!token || !token.startsWith('Bearer ')) {
+    if (!token || !token.startsWith( 'Bearer ' )) {
         return res.status(401).json({ message: 'Authorization Token is required!' });
     }
 
     const tokenWithoutBearer = token.split(' ')[1];
     try {
-        const decoded = jwt.verify(tokenWithoutBearer, SECRET_KEY);
+        const decoded = jwt.verify( tokenWithoutBearer, SECRET_KEY );
         req.user = decoded;
         console.log( decoded );
         next();

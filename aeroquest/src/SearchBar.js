@@ -94,8 +94,8 @@ function SearchBar({ searchResults, setSearchResults }) {
             <Box 
                 sx ={{
                     alignItems: 'center',
-                    border: '3px solid white',
-                    borderRadius: '4px',
+                    border: '.2rem solid white',
+                    borderRadius: '1rem',
                     color: 'cyan',
                     fontSize: 'xx-large',
                     fontWeight: 'bold',
@@ -260,6 +260,8 @@ function SearchBar({ searchResults, setSearchResults }) {
                         backgroundColor: selectedType === 'airlines' ? 'cyan' : '#212121',
                         borderColor: 'cyan',
                         fontWeight: 'bold',
+                        marginLeft: '1rem',
+                        marginRight: '1rem',
                         marginBottom: '1rem',
                         '&:hover': {
                             color: '#212121',
