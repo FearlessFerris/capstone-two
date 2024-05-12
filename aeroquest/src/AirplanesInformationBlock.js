@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, CardContent, Typography } from '@mui/material';
 import { AirplanemodeActive } from '@mui/icons-material';
-
+import axios from 'axios';
 
 // Components & Necessary Files
 
@@ -14,11 +14,21 @@ import { AirplanemodeActive } from '@mui/icons-material';
 function AirplanesInformationBlock({ data }) {
 
   const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
+  const [ bookmarks, setBookmarks ] = useState([]);
 
   const displayFullDetails = ( index ) => {
     setSelectedBoxIndex( ( previousIndex ) => ( previousIndex === index ? null : index ));
   };
 
+  const handleBookmark = async ( item ) => {
+    try {
+        setBookmarks([ ...bookmarks, item ]);
+        const response = await axios.post( '/bookmark/add', item );
+        console.log( 'Bookmark added successfully:', response.data );
+    } catch (error) {
+        console.error( 'Error adding bookmark:', error );
+    }
+  };
 
     return(
         <div className = "information-block">
@@ -338,7 +348,7 @@ function AirplanesInformationBlock({ data }) {
                       fontWeight: 'bold'
                   },
               }} 
-              onClick = { () => displayFullDetails( index ) }
+              onClick = { () => handleBookmark( item ) }
             >
             Bookmark
             </Button>

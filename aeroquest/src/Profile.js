@@ -123,8 +123,8 @@ function Profile() {
                         display: 'flex',
                         flexDirection: 'row', 
                         justifyContent: 'center',
-                        width: '100%',
-                        marginBottom: '10px' 
+                        marginBottom: '10px',
+                        width: '100%'
                     }}
                 >
                     <Typography
@@ -132,6 +132,7 @@ function Profile() {
                         sx = {{
                             color: 'white',
                             fontWeight: 'bold',
+                            marginRight: '1rem',
                             textShadow: '1px 1px black'
                         }}
                     >
@@ -159,6 +160,7 @@ function Profile() {
                         sx = {{
                             color: 'white',
                             fontWeight: 'bold',
+                            marginRight: '1rem',
                             textShadow: '1px 1px black'
                         }}
                     >
@@ -185,6 +187,7 @@ function Profile() {
                         sx = {{
                             color: 'white',
                             fontWeight: 'bold',
+                            marginRight: '1rem',
                             textShadow: '1px 1px black'
                         }}
                     >

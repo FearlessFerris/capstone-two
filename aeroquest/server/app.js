@@ -21,11 +21,13 @@ app.use( express.urlencoded({ extended: true }) );
 
 
 // Routers 
+const bookmarkRouter = require( './routes/bookmarks' );
 const searchRouter = require( './routes/search' );
 const userRouter = require( './routes/users' );
 
 
 // Route Prefix's 
+app.use( '/bookmark', bookmarkRouter );
 app.use( '/search', searchRouter );
 app.use( '/users', userRouter );
 
@@ -42,7 +44,7 @@ app.use(( err, req, res, next ) => {
     if( !err.status ){
         err = new ExpressError( `Internal Server Error`, 500 );
     }
-    res.status( err.status ).json({ error: err.message });
+    res.status( err.status || 500 ).json({ error: err.message });
 });
 
 
