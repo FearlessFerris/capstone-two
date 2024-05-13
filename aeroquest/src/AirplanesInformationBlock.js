@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 // Components & Necessary Files
 const AIRPLANES_ENDPOINT_BASE = 'http://api.aviationstack.com/v1/airplanes';
 
+
 // Airplanes Information Component  
 function AirplanesInformationBlock({ data }) {
 
@@ -19,7 +20,38 @@ function AirplanesInformationBlock({ data }) {
   const [ bookmarks, setBookmarks ] = useState([]);
   const [ notes, setNotes ] = useState( '' );
   const [ openNotes, setOpenNotes ] = useState( false );
+  const [ openSuccessDialog, setOpenSuccessDialog ] = useState( false );
+  const [ successMessage, setSuccessMessage ] = useState( '' );
+  const [ openErrorMessage, setOpenErrorMessage ] = useState( false );
+  const [ errorMessage, setErrorMessage ] = useState( '' );
   const [ selectedItem, setSelectedItem ] = useState( null );
+
+  useEffect( () => {
+    const fetchBookmarks = async () => {
+      try{
+        const token = localStorage.getItem( 'token' );
+        const userId = getUserId();
+        if( !userId ){
+          throw new Error( `Authorization Token not found!` );
+        }
+        const response = await axios.get( `/bookmark/list/${ userId }`, {
+          headers: {
+            Authorization: `Bearer ${ token }`
+          },
+        });
+        console.log( response.data.bookmarks );
+        setBookmarks( response.data.bookmarks );
+      }
+      catch( error ){
+        console.error( `Error fetching bookmarks`, error );
+      }
+    };
+    fetchBookmarks();
+  }, []);
+
+  const isBookmarked = ( apiResponseId ) => {
+    return bookmarks.some(( bookmark ) => bookmark.apiResponseId === apiResponseId );
+  }
 
   const displayFullDetails = ( index ) => {
     setSelectedBoxIndex( ( previousIndex ) => ( previousIndex === index ? null : index ));
@@ -56,37 +88,63 @@ function AirplanesInformationBlock({ data }) {
           },
         }
       );
-      console.log( `Response added successfully!`, response.data );
-      const apiResponseId = response.data.response.id;
+      console.log( item.id );
+      const apiResponseId = item.id;
       console.log( apiResponseId );
-      console.log( response.data.response.response_data.model_name );
-      const bookmarkResponse = await axios.post( '/bookmark/add', {
-        userId: userId, 
-        apiResponseId: apiResponseId,
-        label: response.data.response.response_data.model_name,
-        notes: notes,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${ token }`,
-        },
-      }
-    );
-    console.log( `Bookmark Added Successfully!`, bookmarkResponse.data );
+      const bookmarkLabel = item.model_name;
+      console.log( bookmarkLabel );
 
-    } catch (error) {
+      if( isBookmarked( apiResponseId )){
+        setSuccessMessage( 'This item is already in your Bookmarks!' );
+        setOpenSuccessDialog( true );
+        return;
+      }
+      else{
+        const bookmarkResponse = await axios.post( '/bookmark/add', {
+          userId: userId, 
+          apiResponseId: apiResponseId,
+          label: bookmarkLabel,
+          notes: notes,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${ token }`,
+          },
+        }
+      );
+      setBookmarks((prevBookmarks) => [
+        ...prevBookmarks,
+        { apiResponseId: apiResponseId, label: bookmarkLabel },
+      ]);
+      setSuccessMessage( `Successfully added "${ bookmarkLabel }" to your bookmarks!` );
+    }
+    setOpenSuccessDialog( true );
+    } catch ( error ) {
         console.error( 'Error adding bookmark:', error );
+        setErrorMessage( 'Bookmark already exists!' ); 
+        setOpenErrorMessage( true );
     }
   };
 
   const handleBookmarkClick = ( item ) => {
-    setSelectedItem( item );
     setOpenNotes( true );
+    setNotes( '' );
+    setSelectedItem( item );
   }
 
   const handleCloseNotes = ( item ) => {
     setOpenNotes( false );
   }
+
+  const handleCloseSuccessDialog = () => {
+    setOpenSuccessDialog(false);
+    setSuccessMessage('');
+  }
+
+  const handleCloseErrorMessage = () => {
+    setOpenErrorMessage(false);
+    setErrorMessage('');
+  };
 
     return(
         <div className = "information-block">
@@ -426,7 +484,7 @@ function AirplanesInformationBlock({ data }) {
                         fontWeight: 'bold'
                     },
                 }}
-                onClick={() => handleBookmarkClick(item)}
+                onClick={ () => handleBookmarkClick( item ) }
               >
               Add Note
             </Button>
@@ -545,6 +603,92 @@ function AirplanesInformationBlock({ data }) {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Dialog
+              open = { openSuccessDialog }
+              onClose={ () => handleCloseSuccessDialog }
+              fullWidth
+              maxWidth = "md"
+            >
+            <DialogTitle
+                style={{
+                  backgroundColor: '#212121',
+                  border: '.2rem solid white',
+                  color: 'cyan',
+                  display: 'flex',
+                  fontSize: 'xx-large',
+                  justifyContent: 'center',
+                }}
+              >
+              Bookmark Added
+            </DialogTitle>
+              <DialogContent
+                style={{
+                  backgroundColor: '#212121',
+                  borderLeft: '.2rem solid white',
+                  borderRight: '.2rem solid white',
+                  color: 'white',
+                }}
+              >
+              <DialogContentText
+                  style={{
+                    backgroundColor: '#212121',
+                    color: 'cyan',
+                    display: 'flex',
+                    fontSize: 'x-large',
+                    justifyContent: 'center',
+                  }}
+              >
+              { successMessage }
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions
+                style={{
+                  backgroundColor: '#212121',
+                  borderLeft: '.2rem solid white',
+                  borderRight: '.2rem solid white',
+                  borderBottom: '.2rem solid white',
+                  color: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+            >
+            <Button
+              onClick={() => setOpenSuccessDialog(false)}
+              color="primary"
+              type="submit"
+              variant="outlined"
+              component="span"
+              sx={{
+                color: 'cyan',
+                borderColor: 'cyan',
+                fontWeight: 'bold',
+                '&:hover': {
+                  color: '#212121',
+                  borderColor: 'white',
+                  backgroundColor: 'cyan',
+                  fontWeight: 'bold',
+                },
+              }}
+            >
+            Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open = { openErrorMessage } onClose = { handleCloseErrorMessage }>
+      <DialogTitle>Error</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          { errorMessage }
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button 
+          onClick = { handleCloseErrorMessage } 
+          color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
     </div>
     );
 }

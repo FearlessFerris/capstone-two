@@ -22,6 +22,7 @@ const authorizationMiddleware = require( '../middleware/authorization' );
 router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
     try{
         const { userId, apiResponseId, label, notes } = req.body;
+        console.log( req.body );
         const query = `
             INSERT INTO bookmarks ( user_id, api_response_id, label, notes )
             VALUES ($1, $2, $3, $4 )
@@ -29,8 +30,8 @@ router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
         `;
 
         const result = await db.query( query, [ userId, apiResponseId, label, notes ]);
-
         const bookmark = result.rows[0];
+        console.log( bookmark );
         res.status( 200 ).json({ message: `Bookmark added successfuly`, bookmark })
     }
     catch( error ){
@@ -42,10 +43,9 @@ router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
 
 
 // Get Bookmark 
-router.get( '/list', authorizationMiddleware, async ( req, res, next ) => {
+router.get( '/list/:userId', authorizationMiddleware, async ( req, res, next ) => {
     try {
-        const userId = req.user.id;
-
+        const userId = req.params.userId;
         const query = `
             SELECT * FROM bookmarks
             WHERE user_id = $1;
