@@ -24,7 +24,7 @@ router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
         const { userId, apiResponseId, label, notes } = req.body;
         console.log( req.body );
         const query = `
-            INSERT INTO bookmarks ( user_id, api_response_id, label, notes )
+            INSERT INTO bookmarks ( user_id, endpoint, response_data, notes )
             VALUES ($1, $2, $3, $4 )
             RETURNING *;    
         `;
@@ -116,7 +116,6 @@ router.put( '/modify/:bookmarkId', authorizationMiddleware, async ( req, res, ne
     } catch ( error ) {
         console.error( 'Error modifying bookmark:', error );
         res.status( 500 ).json({ message: 'Internal server error.' });
-        // next( error );
     }
 });
 

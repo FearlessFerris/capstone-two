@@ -7,6 +7,7 @@ import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, Dialog
 import { AirplanemodeActive } from '@mui/icons-material';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { response } from 'express';
 
 
 // Components & Necessary Files
@@ -18,13 +19,15 @@ function AirplanesInformationBlock({ data }) {
 
   const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
   const [ bookmarks, setBookmarks ] = useState([]);
-  const [ notes, setNotes ] = useState( '' );
-  const [ openNotes, setOpenNotes ] = useState( false );
-  const [ openSuccessDialog, setOpenSuccessDialog ] = useState( false );
-  const [ successMessage, setSuccessMessage ] = useState( '' );
-  const [ openErrorMessage, setOpenErrorMessage ] = useState( false );
-  const [ errorMessage, setErrorMessage ] = useState( '' );
   const [ selectedItem, setSelectedItem ] = useState( null );
+  const [ dialogState, setDialogState ] = useState({
+    openNotes: false,
+    notes: '',
+    openSuccessDialog: false,
+    successMessage: '',
+    openErrorMessage: false,
+    errorMessage: '',
+  });
 
   useEffect( () => {
     const fetchBookmarks = async () => {
@@ -75,12 +78,16 @@ function AirplanesInformationBlock({ data }) {
 
         if( !token ){
           throw new Error( 'Authorization Token not Found' );
-        }
+        } 
+
+        const { responseData } = item;
+        console.log( responseData );
         const userId = getUserId();
-        const response = await axios.post( '/api/add', {
+        const response = await axios.post( '/bookmark/add', {
           userId: userId,
           endpoint: AIRPLANES_ENDPOINT_BASE,
-          responseData: item,
+          responseData: responseData,
+          notes: dialogState.notes,
         },
         {
           headers: {
@@ -88,62 +95,39 @@ function AirplanesInformationBlock({ data }) {
           },
         }
       );
-      console.log( item.id );
-      const apiResponseId = item.id;
-      console.log( apiResponseId );
-      const bookmarkLabel = item.model_name;
-      console.log( bookmarkLabel );
-
-      if( isBookmarked( apiResponseId )){
-        setSuccessMessage( 'This item is already in your Bookmarks!' );
-        setOpenSuccessDialog( true );
-        return;
-      }
-      else{
-        const bookmarkResponse = await axios.post( '/bookmark/add', {
-          userId: userId, 
-          apiResponseId: apiResponseId,
-          label: bookmarkLabel,
-          notes: notes,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${ token }`,
-          },
-        }
-      );
+     
       setBookmarks((prevBookmarks) => [
         ...prevBookmarks,
-        { apiResponseId: apiResponseId, label: bookmarkLabel },
+        response.data,
       ]);
-      setSuccessMessage( `Successfully added "${ bookmarkLabel }" to your bookmarks!` );
+      setDialogState({ ...dialogState, successMessage: `bookmark has been created!` });
     }
-    setOpenSuccessDialog( true );
-    } catch ( error ) {
-        console.error( 'Error adding bookmark:', error );
-        setErrorMessage( 'Bookmark already exists!' ); 
-        setOpenErrorMessage( true );
+    catch ( error ) {
+      console.error( 'Error adding bookmark:', error );
+      setDialogState({ ...dialogState, errorMessage: 'Bookmark already exists!', openErrorMessage: true });
     }
   };
 
-  const handleBookmarkClick = ( item ) => {
-    setOpenNotes( true );
-    setNotes( '' );
-    setSelectedItem( item );
-  }
+  const handleCloseNotes = () => {
+    setDialogState({ ...dialogState, openNotes: false });
+  };
 
-  const handleCloseNotes = ( item ) => {
-    setOpenNotes( false );
-  }
+  const handleBookmarkClick = (item) => {
+    setDialogState((prevState) => ({
+      ...prevState,
+      openNotes: true,
+      notes: '',
+      selectedItem: item,
+    }));
+  };
 
-  const handleCloseSuccessDialog = () => {
-    setOpenSuccessDialog(false);
-    setSuccessMessage('');
-  }
-
-  const handleCloseErrorMessage = () => {
-    setOpenErrorMessage(false);
-    setErrorMessage('');
+  const handleClosingDialog = (dialogType) => {
+    setDialogState((prevState) => ({
+      ...prevState,
+      [dialogType]: false,
+      successMessage: dialogType === 'openSuccessDialog' ? '' : prevState.successMessage,
+      errorMessage: dialogType === 'openErrorMessage' ? '' : prevState.errorMessage,
+    }));
   };
 
     return(
@@ -492,7 +476,7 @@ function AirplanesInformationBlock({ data }) {
         </Card>
       ))}
       <Dialog 
-        open = { openNotes } 
+        open = { dialogState.openNotes } 
         onClose = { handleCloseNotes }
         fullWidth
         maxWidth = 'md'
@@ -538,8 +522,8 @@ function AirplanesInformationBlock({ data }) {
                     <textarea
                         rows = "5"
                         cols = "80"
-                        value = {notes}
-                        onChange = {(e) => setNotes(e.target.value)}
+                        value = { dialogState.notes }
+                        onChange = { ( e ) => dialogState.notes( e.target.value )}
                         style = {{ 
                           backgroundColor: '#212121',
                           color: 'cyan',
@@ -604,8 +588,8 @@ function AirplanesInformationBlock({ data }) {
                 </DialogActions>
             </Dialog>
             <Dialog
-              open = { openSuccessDialog }
-              onClose={ () => handleCloseSuccessDialog }
+              open = { dialogState.openSuccessDialog }
+              onClose={ () => handleClosingDialog( 'openNotes' ) }
               fullWidth
               maxWidth = "md"
             >
@@ -638,7 +622,7 @@ function AirplanesInformationBlock({ data }) {
                     justifyContent: 'center',
                   }}
               >
-              { successMessage }
+              { dialogState.successMessage }
               </DialogContentText>
             </DialogContent>
             <DialogActions
@@ -653,7 +637,7 @@ function AirplanesInformationBlock({ data }) {
                 }}
             >
             <Button
-              onClick={() => setOpenSuccessDialog(false)}
+              onClick={() => dialogState.successMessage( false )}
               color="primary"
               type="submit"
               variant="outlined"
@@ -674,16 +658,16 @@ function AirplanesInformationBlock({ data }) {
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog open = { openErrorMessage } onClose = { handleCloseErrorMessage }>
+        <Dialog open = { dialogState.openSuccessDialog } onClose = { () => handleClosingDialog( 'openSuccessDialog' ) }>
       <DialogTitle>Error</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          { errorMessage }
+          { dialogState.errorMessage }
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button 
-          onClick = { handleCloseErrorMessage } 
+          onClick = { () => handleClosingDialog( 'errorMessage' ) } 
           color="primary">
           Close
         </Button>

@@ -137,11 +137,9 @@ router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
 
 
 // Update User Profile 
-router.put( '/update/:userId', async (req, res, next) => {
+router.put( '/update/:userId', async ( req, res, next ) => {
     try {
-        console.log( `PUT request received to update profile: `, req.body );
         const userId = req.params.userId;
-        
         const { username, password, confirmPassword, email, dob, imageUrl, imageUpload } = req.body;
 
         if ( !username || !email ) {
@@ -155,16 +153,10 @@ router.put( '/update/:userId', async (req, res, next) => {
         }
 
         const foundUser = user.rows[0];
-        console.log( `Found:`, foundUser );
-
         foundUser.username = username;
         foundUser.email = email;
         foundUser.dob = dob;
         
-        console.log( username );
-        console.log( email );
-        console.log( dob );
-
         if( imageUrl ){
             foundUser.imageUrl = imageUrl;
         }
@@ -179,7 +171,6 @@ router.put( '/update/:userId', async (req, res, next) => {
 
         await db.query( 'UPDATE users SET username = $1, password = $2, email = $3, dob = $4, image_url = $5, image_upload = $6 WHERE id = $7', 
         [foundUser.username, foundUser.password, foundUser.email, foundUser.dob, foundUser.imageUrl, foundUser.imageUpload, userId ]);
-
 
         res.status(200).json({ message: 'Profile updated successfully.', user: foundUser });
     } catch (error) {
