@@ -17,14 +17,13 @@ import dayjs from 'dayjs';
 
 // Edit Form Component 
 function EditForm({ profile, onSubmit, onCancel }) {
-
-    const [editedProfile, setEditedProfile] = useState(profile || {
-        username: '',
+    const [editedProfile, setEditedProfile] = useState({
+        username: profile.username || '',
         password: '',
         confirmPassword: '',
-        email: '',
-        dob: dayjs(''),
-        imageUrl: '',
+        email: profile.email || '',
+        dob: profile.dob || dayjs(''),
+        imageUrl: profile.image_url || '',
         imageUpload: ''
     });
 
@@ -33,6 +32,13 @@ function EditForm({ profile, onSubmit, onCancel }) {
         setEditedProfile(( previousProfile ) => ({
             ...previousProfile,
             [ name ]: value,
+        }));
+    };
+
+    const handleDateChange = (date) => {
+        setEditedProfile((previousProfile) => ({
+            ...previousProfile,
+            dob: date,
         }));
     };
 
@@ -71,7 +77,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps={{
                         style: { color: 'white' },
                     }}
-                    value = { editedProfile.username }
+                    value = { editedProfile.username || '' }
                     onChange = { handleChange }
                     sx={{
                         textAlign: 'center',
@@ -110,7 +116,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps={{
                         style: { color: 'white' },
                     }}
-                    value = { editedProfile.password }
+                    value = { editedProfile.password || '' }
                     onChange = { handleChange }
                     sx={{
                         textAlign: 'center',
@@ -141,7 +147,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     required
                     id = 'confirm-password'
                     label = 'Confirm Password'
-                    name = 'confirm-password'
+                    name = 'confirmPassword'
                     variant = 'outlined'
                     color = 'primary'
                     size = 'medium'
@@ -149,7 +155,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps={{
                         style: { color: 'white' },
                     }}
-                    value = { editedProfile.confirmPassword }
+                    value = { editedProfile.confirmPassword || '' }
                     onChange = { handleChange }
                     sx={{
                         textAlign: 'center',
@@ -188,7 +194,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps={{
                         style: { color: 'white' },
                     }}
-                    value = { editedProfile.confirmPassword }
+                    value = { editedProfile.email || '' }
                     onChange = { handleChange }
                     sx={{
                         textAlign: 'center',
@@ -223,8 +229,8 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps = {{
                         style: { color: 'white' },
                     }}
-                    value={ editedProfile.dob ? dayjs( editedProfile.dob)  : null}
-                    onChange = { handleChange }
+                    value={ editedProfile.dob ? dayjs( editedProfile.dob || '' )  : null }
+                    onChange = { handleDateChange }
                         sx = {{
                             textAlign: 'center',
                             width: '15vw',
@@ -262,7 +268,7 @@ function EditForm({ profile, onSubmit, onCancel }) {
                     InputLabelProps={{
                         style: { color: 'white' },
                     }}
-                    value = { editedProfile.imageUrl }
+                    value = { editedProfile.imageUrl || '' }
                     onChange = { handleChange }
                     sx={{
                         textAlign: 'center',

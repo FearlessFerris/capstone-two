@@ -27,25 +27,14 @@ CREATE TABLE searches (
 );
 
 
--- Create API Response Table 
-CREATE TABLE api_responses (
+-- Create Bookmarks Table 
+CREATE TABLE bookmarks (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     endpoint VARCHAR(100) NOT NULL,
     response_data JSONB NOT NULL,
-    response_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- Create Bookmarks / Favorites Table 
-CREATE TABLE bookmarks (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    api_response_id INTEGER,
-    label VARCHAR(100),
     notes TEXT,
-    CONSTRAINT fk_api_response_id FOREIGN KEY (api_response_id) REFERENCES api_responses(id),
-    CONSTRAINT unique_api_response_id UNIQUE (api_response_id)
+    response_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 

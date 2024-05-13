@@ -91,8 +91,8 @@ function Login({ setIsLoggedIn }) {
                 sx = {{
                     alignItems: 'center',
                     backgroundColor: '#212121',
-                    borderRadius: '4px',
-                    border: '3px solid white',
+                    borderRadius: '1rem',
+                    border: '.2rem solid white',
                     color: 'cyan',
                     display: 'flex',
                     fontSize: 'xx-large',

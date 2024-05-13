@@ -21,10 +21,10 @@ const authorizationMiddleware = (req, res, next) => {
     try {
         const decoded = jwt.verify( tokenWithoutBearer, SECRET_KEY );
         req.user = decoded;
-        console.log( decoded );
         next();
     } catch (error) {
-        return res.status(401).json({ message: 'Invalid Token' });
+        // return res.status(401).json({ message: 'Invalid Token' });
+        next({ status: 401, message: 'Invalid Token' });
     }
 };
 

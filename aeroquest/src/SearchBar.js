@@ -85,7 +85,7 @@ function SearchBar({ searchResults, setSearchResults }) {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                height: '60vh',
+                height: '50vh',
                 marginBottom: '-15vh'
             }}
             >

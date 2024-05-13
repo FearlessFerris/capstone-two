@@ -137,35 +137,53 @@ router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
 
 
 // Update User Profile 
-router.put( '/update', authorizationMiddleware, async (req, res, next) => {
+router.put( '/update/:userId', async (req, res, next) => {
     try {
-        const userId = req.user.id;
-        const { username, password, confirmPassword, email, dob, imageUrl } = req.body;
+        console.log( `PUT request received to update profile: `, req.body );
+        const userId = req.params.userId;
+        
+        const { username, password, confirmPassword, email, dob, imageUrl, imageUpload } = req.body;
 
         if ( !username || !email ) {
             return res.status( 400 ).json({ message: 'Username and email are required fields.' });
         }
+        const query = `SELECT * FROM users WHERE id = $1`;
+        const user = await db.query( query, [ userId ] );
 
-        const user = await db.findById(userId);
         if ( !user ) {
-            return res.status( 404 ).json({ message: 'User not found.' });
+            return res.status(404).json({ message: 'User not found.' });
         }
 
-        user.username = username;
-        user.email = email;
-        user.dob = dob;
-        user.imageUrl = imageUrl;
+        const foundUser = user.rows[0];
+        console.log( `Found:`, foundUser );
 
-        if (password && confirmPassword && password === confirmPassword) {
-            user.password = await bcrypt.hash(password, 10); 
+        foundUser.username = username;
+        foundUser.email = email;
+        foundUser.dob = dob;
+        
+        console.log( username );
+        console.log( email );
+        console.log( dob );
+
+        if( imageUrl ){
+            foundUser.imageUrl = imageUrl;
         }
 
-        await user.save();
+        if( imageUpload ){
+            foundUser.imageUpload = imageUpload;
+        }
 
-        res.status(200).json({ message: 'Profile updated successfully.', user: user.toJSON() });
+        if ( password && confirmPassword && password === confirmPassword ) {
+            foundUser.password = await bcrypt.hash(password, 10); 
+        }
+
+        await db.query( 'UPDATE users SET username = $1, password = $2, email = $3, dob = $4, image_url = $5, image_upload = $6 WHERE id = $7', 
+        [foundUser.username, foundUser.password, foundUser.email, foundUser.dob, foundUser.imageUrl, foundUser.imageUpload, userId ]);
+
+
+        res.status(200).json({ message: 'Profile updated successfully.', user: foundUser });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error.' });
-        next( error );
     }
 });
 

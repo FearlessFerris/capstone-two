@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Card, CardHeader, Typography, TextField, Button } from '@mui/material'
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 
 // Components & Necessary Files 
@@ -32,7 +33,6 @@ function Profile() {
                         Authorization: `Bearer ${token}`, 
                     },
                 };
-
                 const response = await axios.get( '/users/profile', config );
                 setProfile( response.data.data );
             }
@@ -46,26 +46,38 @@ function Profile() {
 
     const handleEditSubmit = async ( editedProfile ) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem( 'token' );
             if (!token) {
-                console.error('Token is missing!');
+                console.error( 'Token is missing!' );
                 return;
             }
 
             const config = {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${ token }`,
                 },
             };
 
-            const response = await axios.put( '/users/profile', editedProfile, config );
-            console.log('Profile updated successfully:', response.data);
+            const userId = getUserId();
+            const response = await axios.put( `/users/update/${ userId }`, editedProfile, config );
+            console.log( 'Profile updated successfully:', response.data );
+            const updatedProfile = response.data.user;
             setIsEditing( false ); 
-            setProfile( editedProfile ); 
+            setProfile( updatedProfile ); 
         } catch (error) {
-            console.error('Error updating profile:', error);
+            console.error('Error updating profile:', error.response || error.message || error );
         }
     };
+
+    const getUserId = () => {
+        const token = localStorage.getItem( 'token' );
+        if( !token ){
+          throw new Error( 'Authorization Error!' );
+        }
+        const decodedToken = jwtDecode( token );
+        const userId = decodedToken.id;
+        return userId;
+      }
 
     return(
         <div className = 'profile-container'
@@ -83,8 +95,8 @@ function Profile() {
                 sx = {{
                     alignItems: 'center',
                     backgroundColor: '#212121',
-                    borderRadius: '4px',
-                    border: '3px solid white',
+                    borderRadius: '1rem',
+                    border: '.2rem solid white',
                     color: 'cyan',
                     display: 'flex',
                     fontSize: 'xx-large',
