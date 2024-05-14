@@ -119,6 +119,7 @@ router.post( '/create', async ( req, res, next ) => {
 // User Account Profile 
 router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
     try{
+        console.log( ACCESS_KEY );
         const userId = req.user.id;
         const query = `SELECT id, username, email, dob, image_url, image_upload FROM users WHERE id = $1`;
         const result = await db.query(query, [userId]);

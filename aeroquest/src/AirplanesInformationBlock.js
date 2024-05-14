@@ -7,7 +7,6 @@ import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, Dialog
 import { AirplanemodeActive } from '@mui/icons-material';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { response } from 'express';
 
 
 // Components & Necessary Files
@@ -21,12 +20,12 @@ function AirplanesInformationBlock({ data }) {
   const [ bookmarks, setBookmarks ] = useState([]);
   const [ selectedItem, setSelectedItem ] = useState( null );
   const [ dialogState, setDialogState ] = useState({
-    openNotes: false,
-    notes: '',
     openSuccessDialog: false,
-    successMessage: '',
     openErrorMessage: false,
+    openNotes: false,
+    successMessage: '',
     errorMessage: '',
+    notes: '',
   });
 
   useEffect( () => {
@@ -52,10 +51,6 @@ function AirplanesInformationBlock({ data }) {
     fetchBookmarks();
   }, []);
 
-  const isBookmarked = ( apiResponseId ) => {
-    return bookmarks.some(( bookmark ) => bookmark.apiResponseId === apiResponseId );
-  }
-
   const displayFullDetails = ( index ) => {
     setSelectedBoxIndex( ( previousIndex ) => ( previousIndex === index ? null : index ));
   };
@@ -80,36 +75,68 @@ function AirplanesInformationBlock({ data }) {
           throw new Error( 'Authorization Token not Found' );
         } 
 
-        const { responseData } = item;
-        console.log( responseData );
         const userId = getUserId();
-        const response = await axios.post( '/bookmark/add', {
-          userId: userId,
-          endpoint: AIRPLANES_ENDPOINT_BASE,
-          responseData: responseData,
-          notes: dialogState.notes,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${ token }`
+        console.log( AIRPLANES_ENDPOINT_BASE );
+        const existingBookmark = bookmarks.find((bookmark) => bookmark.responseData?.id === item);
+        console.log( existingBookmark );
+        
+        if( existingBookmark ){
+          const response = await axios.put( `/bookmark/modify/${ existingBookmark.id }`, {
+            notes: dialogState.notes,
           },
+          {
+            headers: {
+              Authorization: `Bearer ${ token }`,
+            },
+          });
+          setDialogState({
+            ...dialogState, 
+            openSuccessDialog: true,
+            successMessage: 'Notes were updateed Successfully!',
+          });
         }
-      );
-     
-      setBookmarks((prevBookmarks) => [
-        ...prevBookmarks,
-        response.data,
-      ]);
-      setDialogState({ ...dialogState, successMessage: `bookmark has been created!` });
-    }
-    catch ( error ) {
-      console.error( 'Error adding bookmark:', error );
-      setDialogState({ ...dialogState, errorMessage: 'Bookmark already exists!', openErrorMessage: true });
+        else {
+          
+          const response = await axios.post( '/bookmark/add', {
+            userId: userId,
+            endpoint: AIRPLANES_ENDPOINT_BASE,
+            responseData: item,
+            notes: dialogState.notes,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${ token }`
+            },
+          }
+        );
+        
+        setBookmarks((prevBookmarks) => [
+          ...prevBookmarks,
+          response.data,
+        ]);
+
+        setDialogState({ 
+          ...dialogState, 
+          openSuccessDialog: true, 
+          successMessage: `Bookmark has been created!`,
+        });
+      }
+      }
+      catch ( error ) {
+        console.error( 'Error adding bookmark:', error );
+        setDialogState({ 
+          ...dialogState, 
+          errorMessage: 'Bookmark already exists!', 
+          openErrorMessage: true,
+        });
     }
   };
 
   const handleCloseNotes = () => {
-    setDialogState({ ...dialogState, openNotes: false });
+    setDialogState({ 
+      ...dialogState, 
+      openNotes: false 
+    });
   };
 
   const handleBookmarkClick = (item) => {
@@ -125,8 +152,6 @@ function AirplanesInformationBlock({ data }) {
     setDialogState((prevState) => ({
       ...prevState,
       [dialogType]: false,
-      successMessage: dialogType === 'openSuccessDialog' ? '' : prevState.successMessage,
-      errorMessage: dialogType === 'openErrorMessage' ? '' : prevState.errorMessage,
     }));
   };
 
@@ -523,7 +548,7 @@ function AirplanesInformationBlock({ data }) {
                         rows = "5"
                         cols = "80"
                         value = { dialogState.notes }
-                        onChange = { ( e ) => dialogState.notes( e.target.value )}
+                        onChange = { ( e ) => setDialogState({ ...dialogState, notes: e.target.value }) }
                         style = {{ 
                           backgroundColor: '#212121',
                           color: 'cyan',
@@ -566,7 +591,7 @@ function AirplanesInformationBlock({ data }) {
                     Cancel
                     </Button>
                     <Button 
-                      onClick={() => { handleApiResponse( selectedItem ); handleCloseNotes(); }} 
+                      onClick={() => { handleApiResponse(selectedItem); handleCloseNotes(); }} 
                       color="primary"
                       type='submit'
                       variant='outlined'
@@ -589,7 +614,7 @@ function AirplanesInformationBlock({ data }) {
             </Dialog>
             <Dialog
               open = { dialogState.openSuccessDialog }
-              onClose={ () => handleClosingDialog( 'openNotes' ) }
+              onClose={ () => handleClosingDialog( 'openSuccessDialog' ) }
               fullWidth
               maxWidth = "md"
             >
@@ -637,7 +662,7 @@ function AirplanesInformationBlock({ data }) {
                 }}
             >
             <Button
-              onClick={() => dialogState.successMessage( false )}
+              onClick={() => handleClosingDialog( 'openSuccessDialog' ) } 
               color="primary"
               type="submit"
               variant="outlined"
@@ -658,7 +683,7 @@ function AirplanesInformationBlock({ data }) {
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog open = { dialogState.openSuccessDialog } onClose = { () => handleClosingDialog( 'openSuccessDialog' ) }>
+        <Dialog open = { dialogState.openErrorMessage } onClose = { () => handleClosingDialog( 'openErrorMessage' ) }>
       <DialogTitle>Error</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -667,7 +692,7 @@ function AirplanesInformationBlock({ data }) {
       </DialogContent>
       <DialogActions>
         <Button 
-          onClick = { () => handleClosingDialog( 'errorMessage' ) } 
+          onClick = { () => handleClosingDialog( 'openErrorMessage' ) } 
           color="primary">
           Close
         </Button>

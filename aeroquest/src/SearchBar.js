@@ -86,7 +86,7 @@ function SearchBar({ searchResults, setSearchResults }) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '50vh',
-                marginBottom: '-15vh'
+                marginBottom: '-1vh'
             }}
             >
 

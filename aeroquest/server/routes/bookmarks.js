@@ -21,7 +21,7 @@ const authorizationMiddleware = require( '../middleware/authorization' );
 // Add Bookmark 
 router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
     try{
-        const { userId, apiResponseId, label, notes } = req.body;
+        const { userId, endpoint, responseData, notes } = req.body;
         console.log( req.body );
         const query = `
             INSERT INTO bookmarks ( user_id, endpoint, response_data, notes )
@@ -29,7 +29,7 @@ router.post( '/add', authorizationMiddleware, async ( req, res, next ) => {
             RETURNING *;    
         `;
 
-        const result = await db.query( query, [ userId, apiResponseId, label, notes ]);
+        const result = await db.query( query, [ userId, endpoint, responseData, notes ]);
         const bookmark = result.rows[0];
         console.log( bookmark );
         res.status( 200 ).json({ message: `Bookmark added successfuly`, bookmark })
@@ -96,16 +96,16 @@ router.put( '/modify/:bookmarkId', authorizationMiddleware, async ( req, res, ne
     try {
         const userId = req.user.id;
         const { bookmarkId } = req.params;
-        const { label, notes } = req.body;
+        const { notes } = req.body;
 
         const query = `
             UPDATE bookmarks
-            SET label = $1, notes = $2
-            WHERE id = $3 AND user_id = $4
+            SET notes = $1
+            WHERE id = $2 AND user_id = $3
             RETURNING *;
         `;
 
-        const result = await db.query( query, [ label, notes, bookmarkId, userId ]);
+        const result = await db.query( query, [ notes, bookmarkId, userId ]);
 
         if ( result.rows.length === 0 ) {
             return res.status( 404 ).json({ message: 'Bookmark not found or you do not have permission to modify it.' });
