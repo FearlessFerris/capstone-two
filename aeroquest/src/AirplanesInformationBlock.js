@@ -18,21 +18,21 @@ function AirplanesInformationBlock({ data }) {
 
   const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
   const [ bookmarks, setBookmarks ] = useState([]);
-  const [ selectedItem, setSelectedItem ] = useState( null );
-  const [ dialogState, setDialogState ] = useState({
-    openSuccessDialog: false,
-    openErrorMessage: false,
-    openNotes: false,
+  const [ itemInfo, setItemInfo ] = useState({
+    toggleSuccessMessage: false,
+    toggleErrorMessage: false,
+    toggleNotes: false,
     successMessage: '',
     errorMessage: '',
+    chosenItem: null, 
     notes: '',
+    newBookmarkId: null,
   });
 
   useEffect( () => {
     const fetchBookmarks = async () => {
       try{
-        const token = localStorage.getItem( 'token' );
-        const userId = getUserId();
+        const { userId, token } = getUserId();
         if( !userId ){
           throw new Error( `Authorization Token not found!` );
         }
@@ -58,102 +58,139 @@ function AirplanesInformationBlock({ data }) {
   const getUserId = () => {
     const token = localStorage.getItem( 'token' );
     if( !token ){
-      throw new Error( 'Authorization Error!' );
+      throw new Error( 'Please login to add a bookmark!' );
     }
-
     const decodedToken = jwtDecode( token );
     const userId = decodedToken.id;
-    return userId;
+    return { userId, token };
   }
 
-  const handleApiResponse = async ( item ) => {
-    try {
-      console.log( item );
-        const token = localStorage.getItem( 'token' );
-
-        if( !token ){
-          throw new Error( 'Authorization Token not Found' );
-        } 
-
-        const userId = getUserId();
-        console.log( AIRPLANES_ENDPOINT_BASE );
-        const existingBookmark = bookmarks.find((bookmark) => bookmark.responseData?.id === item);
-        console.log( existingBookmark );
-        
-        if( existingBookmark ){
-          const response = await axios.put( `/bookmark/modify/${ existingBookmark.id }`, {
-            notes: dialogState.notes,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${ token }`,
-            },
-          });
-          setDialogState({
-            ...dialogState, 
-            openSuccessDialog: true,
-            successMessage: 'Notes were updateed Successfully!',
-          });
+    const handleBookmarkClick = async ( item ) => {
+      try{
+        const { userId, token } = getUserId();
+        if( !userId ){
+          setItemInfo(( prevInfo ) => ({
+            ...prevInfo,
+            toggleErrorMessage: true, 
+            errorMessage: 'Please login to add a bookmark!'
+          }));
+          return;
         }
-        else {
-          
-          const response = await axios.post( '/bookmark/add', {
-            userId: userId,
+        const existingBookmark = bookmarks.find(( bookmark ) => bookmark.response_data.id === item.id );
+        if( existingBookmark ){
+          setItemInfo(( prevInfo ) => ({
+            ...prevInfo,
+            toggleErrorMessage: true,
+            errorMessage: `Bookmark with AirplaneId: ${ item.id } is already in your bookmarks!`,
+            chosenItem: item,
+          }));
+          return;
+        }
+
+        const info = {
+            userId,
             endpoint: AIRPLANES_ENDPOINT_BASE,
-            responseData: item,
-            notes: dialogState.notes,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${ token }`
-            },
+            responseData: item, 
+            notes: itemInfo.notes,
+          };
+
+        const response = await axios.post( '/bookmark/add', info, {
+          headers: {
+            Authorization: `Bearer ${ token }`
           }
-        );
+        });
+        console.log( response.data );
         
-        setBookmarks((prevBookmarks) => [
+        setBookmarks( ( prevBookmarks ) => [
           ...prevBookmarks,
-          response.data,
+          response.data
         ]);
 
-        setDialogState({ 
-          ...dialogState, 
-          openSuccessDialog: true, 
-          successMessage: `Bookmark has been created!`,
-        });
+        setItemInfo(( prevInfo ) => ({
+          ...prevInfo,
+          toggleSuccessMessage: true,
+          successMessage: `Bookmark successfully added for AirplaneId: ${ item.id }`,
+          chosenItem: item,
+          newBookmarkId: response.data.id,
+          toggleNotes: false,
+          notes: '',
+        }));
       }
+    
+      catch( error ){
+        console.error( `Error occurred adding bookmark!` );
+        console.error( error );
       }
-      catch ( error ) {
-        console.error( 'Error adding bookmark:', error );
-        setDialogState({ 
-          ...dialogState, 
-          errorMessage: 'Bookmark already exists!', 
-          openErrorMessage: true,
-        });
     }
-  };
 
-  const handleCloseNotes = () => {
-    setDialogState({ 
-      ...dialogState, 
-      openNotes: false 
-    });
-  };
+    const handleAddBookmarkWithNotes = async () => {
+    try {
+      const { userId, token } = getUserId();
+      if (!userId) {
+        setItemInfo((prevInfo) => ({
+          ...prevInfo,
+          toggleErrorMessage: true,
+          errorMessage: 'Please login to add a bookmark!'
+        }));
+        return;
+      }
 
-  const handleBookmarkClick = (item) => {
-    setDialogState((prevState) => ({
-      ...prevState,
-      openNotes: true,
-      notes: '',
-      selectedItem: item,
-    }));
-  };
+      const existingBookmark = bookmarks.find((bookmark) => bookmark.response_data.id === itemInfo.chosenItem.id);
+      if (existingBookmark) {
+        setItemInfo((prevInfo) => ({
+          ...prevInfo,
+          toggleErrorMessage: true,
+          errorMessage: `Bookmark with AirplaneId: ${itemInfo.chosenItem.id} is already in your bookmarks!`,
+        }));
+        return;
+      }
 
-  const handleClosingDialog = (dialogType) => {
-    setDialogState((prevState) => ({
-      ...prevState,
-      [dialogType]: false,
-    }));
-  };
+      const info = {
+        userId,
+        endpoint: AIRPLANES_ENDPOINT_BASE,
+        responseData: itemInfo.chosenItem,
+        notes: itemInfo.notes,
+      };
+
+      const response = await axios.post('/bookmark/add', info, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setBookmarks((prevBookmarks) => [
+        ...prevBookmarks,
+        response.data
+      ]);
+
+      setItemInfo((prevInfo) => ({
+        ...prevInfo,
+        toggleSuccessMessage: true,
+        successMessage: `Bookmark successfully added for AirplaneId: ${itemInfo.chosenItem.id}`,
+        newBookmarkId: response.data.id
+      }));
+    } catch (error) {
+      console.error(`Error occurred adding bookmark with notes!`);
+      console.error(error);
+    }
+  }
+
+
+    const handleAddNoteClick = (item) => {
+      setItemInfo((prevInfo) => ({
+        ...prevInfo,
+        toggleNotes: true,
+        chosenItem: item,
+      }));
+    }
+
+    const handleCloseNotes = () => {
+      setItemInfo( ( prevInfo ) => ({
+        ...prevInfo,
+        toggleNotes: false,
+        notes: '',
+      }));
+    }
 
     return(
         <div className = "information-block">
@@ -473,7 +510,7 @@ function AirplanesInformationBlock({ data }) {
                       fontWeight: 'bold'
                   },
               }} 
-              onClick = { () => handleApiResponse( item ) }
+              onClick = { () => handleBookmarkClick( item ) }
             >
             Bookmark
             </Button>
@@ -493,213 +530,304 @@ function AirplanesInformationBlock({ data }) {
                         fontWeight: 'bold'
                     },
                 }}
-                onClick={ () => handleBookmarkClick( item ) }
+                onClick={ () => handleAddNoteClick( item ) }
               >
               Add Note
             </Button>
           </CardContent>
         </Card>
       ))}
-      <Dialog 
-        open = { dialogState.openNotes } 
-        onClose = { handleCloseNotes }
-        fullWidth
-        maxWidth = 'md'
+ 
+<Dialog 
+  open = { itemInfo.toggleSuccessMessage }
+  onClose={ () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) }
+  fullWidth
+  maxWidth = 'md'
+  style = {{
+  }}
+>
+  <DialogTitle
+    style={{
+      backgroundColor: '#212121',
+      border: '.2rem solid white',
+      color: 'cyan',
+      display: 'flex',
+      fontSize: 'xx-large',
+      justifyContent: 'center',
+    }}
+  >
+  {`Bookmark Added For AirplaneId: ${ itemInfo.chosenItem?.id }`}
+  </DialogTitle>
+  <DialogContent
+    style={{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      color: 'white',
+    }}
+  >
+    <DialogContentText
+      style={{
+        backgroundColor: '#212121',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'x-large',
+        justifyContent: 'center',
+      }}
+    >
+      { itemInfo.successMessage }
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions
+    style = {{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      borderBottom: '.2rem solid white',
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center'
+    }}
+  >
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+        }}
+      >
+      Undo
+      </Button>
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+          }}
         >
-                <DialogTitle
-                  style = {{
-                    backgroundColor: '#212121',
-                    border: '.2rem solid white',
-                    color: 'cyan',
-                    display: 'flex',
-                    fontSize: 'xx-large',
-                    justifyContent: 'center'
-                  }}
-                >
-                Add Note
-                </DialogTitle>
-                <DialogContent
-                  style = {{
-                    backgroundColor: '#212121',
-                    borderLeft: '.2rem solid white',
-                    borderRight: '.2rem solid white',
-                    color: 'white'
-                  }}
-                >
-                    <DialogContentText
-                      style = {{
-                        backgroundColor: '#212121',
-                        color: 'cyan',
-                        display: 'flex',
-                        fontSize: 'x-large',
-                        justifyContent: 'center',
-                      }}
-                    >
-                        Please add your note for this bookmark.
-                    </DialogContentText>
-                    <div 
-                      style = {{
-                        display: 'flex',
-                        justifyContent: 'center'
-                      }}
-                    >
+        Close
+        </Button>
+      </DialogActions>
+  </Dialog>
 
-                    <textarea
-                        rows = "5"
-                        cols = "80"
-                        value = { dialogState.notes }
-                        onChange = { ( e ) => setDialogState({ ...dialogState, notes: e.target.value }) }
-                        style = {{ 
-                          backgroundColor: '#212121',
-                          color: 'cyan',
-                          fontSize: 'x-large',
-                          padding: '5px', 
-                          resize: 'none' 
-                        }}
-                      />
-                    </div>
-                </DialogContent>
-                <DialogActions
-                  style = {{
-                    backgroundColor: '#212121',
-                    borderLeft: '.2rem solid white',
-                    borderRight: '.2rem solid white',
-                    borderBottom: '.2rem solid white',
-                    color: 'white',
-                    display: 'flex',
-                    justifyContent: 'center'
-                  }}
-                >
-                    <Button 
-                      onClick = { handleCloseNotes } 
-                      color="primary"
-                      type='submit'
-                      variant='outlined'
-                      component='span'
-                      sx = {{
-                          color: 'cyan',
-                          borderColor: 'cyan',
-                          fontWeight: 'bold',
-                            '&:hover': {
-                              color: '#212121',
-                              borderColor: 'white',
-                              backgroundColor: 'cyan',
-                              fontWeight: 'bold'
-                          },
-                      }}
-                    >
-                    Cancel
-                    </Button>
-                    <Button 
-                      onClick={() => { handleApiResponse(selectedItem); handleCloseNotes(); }} 
-                      color="primary"
-                      type='submit'
-                      variant='outlined'
-                      component='span'
-                      sx = {{
-                          color: 'cyan',
-                          borderColor: 'cyan',
-                          fontWeight: 'bold',
-                            '&:hover': {
-                              color: '#212121',
-                              borderColor: 'white',
-                              backgroundColor: 'cyan',
-                              fontWeight: 'bold'
-                          },
-                      }}
-                    >
-                    Save
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
-              open = { dialogState.openSuccessDialog }
-              onClose={ () => handleClosingDialog( 'openSuccessDialog' ) }
-              fullWidth
-              maxWidth = "md"
-            >
-            <DialogTitle
-                style={{
-                  backgroundColor: '#212121',
-                  border: '.2rem solid white',
-                  color: 'cyan',
-                  display: 'flex',
-                  fontSize: 'xx-large',
-                  justifyContent: 'center',
-                }}
-              >
-              Bookmark Added
-            </DialogTitle>
-              <DialogContent
-                style={{
-                  backgroundColor: '#212121',
-                  borderLeft: '.2rem solid white',
-                  borderRight: '.2rem solid white',
-                  color: 'white',
-                }}
-              >
-              <DialogContentText
-                  style={{
-                    backgroundColor: '#212121',
-                    color: 'cyan',
-                    display: 'flex',
-                    fontSize: 'x-large',
-                    justifyContent: 'center',
-                  }}
-              >
-              { dialogState.successMessage }
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions
-                style={{
-                  backgroundColor: '#212121',
-                  borderLeft: '.2rem solid white',
-                  borderRight: '.2rem solid white',
-                  borderBottom: '.2rem solid white',
-                  color: 'white',
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-            >
-            <Button
-              onClick={() => handleClosingDialog( 'openSuccessDialog' ) } 
-              color="primary"
-              type="submit"
-              variant="outlined"
-              component="span"
-              sx={{
+<Dialog 
+  open = { itemInfo.toggleErrorMessage }
+  onClose={ () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) }
+  fullWidth
+  maxWidth = 'md'
+>
+  <DialogTitle
+    style={{
+      backgroundColor: '#212121',
+      border: '.2rem solid white',
+      color: 'cyan',
+      display: 'flex',
+      fontSize: 'xx-large',
+      justifyContent: 'center',
+    }}
+  >
+  {`Bookmark Exists For AirplaneId: ${ itemInfo.chosenItem?.id }`}
+  </DialogTitle>
+  <DialogContent
+    style={{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      color: 'white',
+    }}
+  >
+    <DialogContentText
+      style={{
+        backgroundColor: '#212121',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'x-large',
+        justifyContent: 'center',
+      }}
+    >
+      { itemInfo.errorMessage }
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions
+    style = {{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      borderBottom: '.2rem solid white',
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center'
+    }}
+  >
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+        }}
+      >
+      Undo
+      </Button>
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+          }}
+        >
+        Close
+        </Button>
+      </DialogActions>
+  </Dialog>
+
+  <Dialog 
+    open={itemInfo.toggleNotes} 
+    onClose={handleCloseNotes}
+    fullWidth
+    maxWidth = 'md'
+  >
+    <DialogTitle
+      style={{
+        backgroundColor: '#212121',
+        border: '.2rem solid white',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'xx-large',
+        justifyContent: 'center',
+      }}
+    >
+    Add Note
+    </DialogTitle>
+        <DialogContent
+          style={{
+            backgroundColor: '#212121',
+            borderLeft: '.2rem solid white',
+            borderRight: '.2rem solid white',
+            color: 'white',
+          }}
+        >
+          <DialogContentText
+            style={{
+              backgroundColor: '#212121',
+              color: 'cyan',
+              display: 'flex',
+              fontSize: 'x-large',
+              justifyContent: 'center',
+            }}
+          >
+            Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.model_name : ''}
+          </DialogContentText>
+          <textarea
+            rows = '5'
+            cols = '75' 
+            placeholder="Enter your notes here..."
+            value = { itemInfo.notes }
+            onChange={ (e) => setItemInfo((prevInfo) => ({ ...prevInfo, notes: e.target.value })) }
+            style = {{ 
+              backgroundColor: '#212121',
+              color: 'cyan',
+              fontSize: 'x-large',
+              resize: 'none' 
+            }}
+          />
+        </DialogContent>
+        <DialogActions
+          style = {{
+            backgroundColor: '#212121',
+            borderLeft: '.2rem solid white',
+            borderRight: '.2rem solid white',
+            borderBottom: '.2rem solid white',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
+          <Button 
+            onClick = {handleCloseNotes}
+            color="primary"
+            type='submit'
+            variant='outlined'
+            component='span'
+            sx = {{
                 color: 'cyan',
                 borderColor: 'cyan',
                 fontWeight: 'bold',
-                '&:hover': {
-                  color: '#212121',
-                  borderColor: 'white',
-                  backgroundColor: 'cyan',
-                  fontWeight: 'bold',
-                },
-              }}
-            >
-            Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open = { dialogState.openErrorMessage } onClose = { () => handleClosingDialog( 'openErrorMessage' ) }>
-      <DialogTitle>Error</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          { dialogState.errorMessage }
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button 
-          onClick = { () => handleClosingDialog( 'openErrorMessage' ) } 
-          color="primary">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-    </div>
-    );
-}
+                  '&:hover': {
+                    color: '#212121',
+                    borderColor: 'white',
+                    backgroundColor: 'cyan',
+                    fontWeight: 'bold'
+            },
+        }}
+          >
+          Cancel
+          </Button>
+          <Button 
+            onClick = {handleAddBookmarkWithNotes} 
+            variant="outlined" 
+            color="primary"
+            type='submit'
+            component='span'
+            sx = {{
+                color: 'cyan',
+                borderColor: 'cyan',
+                fontWeight: 'bold',
+                  '&:hover': {
+                    color: '#212121',
+                    borderColor: 'white',
+                    backgroundColor: 'cyan',
+                    fontWeight: 'bold'
+            },
+          }}
+          >
+          Save Note
+          </Button>
+        </DialogActions>
+      </Dialog>
+</div>)}
 
 export default AirplanesInformationBlock;

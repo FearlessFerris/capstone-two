@@ -21,7 +21,7 @@ app.use( express.urlencoded({ extended: true }) );
 
 
 // Routers 
-const bookmarkRouter = require( './routes/bookmarks' );
+const bookmarkRouter = require( './routes/bookmark' );
 const searchRouter = require( './routes/search' );
 const userRouter = require( './routes/users' );
 
