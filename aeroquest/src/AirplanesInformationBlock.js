@@ -590,7 +590,7 @@ function AirplanesInformationBlock({ data }) {
     }}
   >
       <Button 
-        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) } 
         color="primary"
         type='submit'
         variant='outlined'
@@ -610,7 +610,7 @@ function AirplanesInformationBlock({ data }) {
       Undo
       </Button>
       <Button 
-        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) } 
         color="primary"
         type='submit'
         variant='outlined'
@@ -787,7 +787,7 @@ function AirplanesInformationBlock({ data }) {
           }}
         >
           <Button 
-            onClick = {handleCloseNotes}
+            onClick = { handleCloseNotes }
             color="primary"
             type='submit'
             variant='outlined'
@@ -807,7 +807,7 @@ function AirplanesInformationBlock({ data }) {
           Cancel
           </Button>
           <Button 
-            onClick = {handleAddBookmarkWithNotes} 
+            onClick = { handleAddBookmarkWithNotes } 
             variant="outlined" 
             color="primary"
             type='submit'

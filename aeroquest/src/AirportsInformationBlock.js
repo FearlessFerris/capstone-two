@@ -1,130 +1,302 @@
-// Airports Information Block Conponenet Implementation 
+// Airport Information Block Implementation 
 
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardContent, Typography } from '@mui/material';
+import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from '@mui/material';
 import { FlightTakeoff } from '@mui/icons-material';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 
-// Components & Necessary Files 
+// Components & Necessary Files
+const AIRPORTS_ENDPOINT_BASE = 'http://api.aviationstack.com/v1/airports';
 
 
-// Airports Information Component 
-function AirportsInformationBlock({ data }){
+// Airplanes Information Component  
+function AirplanesInformationBlock({ data }) {
 
-    const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
+  const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
+  const [ bookmarks, setBookmarks ] = useState([]);
+  const [ itemInfo, setItemInfo ] = useState({
+    toggleSuccessMessage: false,
+    toggleErrorMessage: false,
+    toggleNotes: false,
+    successMessage: '',
+    errorMessage: '',
+    chosenItem: null, 
+    notes: '',
+    newBookmarkId: null,
+  });
 
-    const displayFullDetails = ( index ) => {
-        setSelectedBoxIndex( ( previousIndex ) => ( previousIndex === index ? null : index ));        
+  useEffect( () => {
+    const fetchBookmarks = async () => {
+      try{
+        const { userId, token } = getUserId();
+        if( !userId ){
+          throw new Error( `Authorization Token not found!` );
+        }
+        const response = await axios.get( `/bookmark/list/${ userId }`, {
+          headers: {
+            Authorization: `Bearer ${ token }`
+          },
+        });
+        console.log( response.data.bookmarks );
+        setBookmarks( response.data.bookmarks );
+      }
+      catch( error ){
+        console.error( `Error fetching bookmarks`, error );
+      }
     };
+    fetchBookmarks();
+  }, []);
+
+  const displayFullDetails = ( index ) => {
+    setSelectedBoxIndex( ( previousIndex ) => ( previousIndex === index ? null : index ));
+  };
+
+  const getUserId = () => {
+    const token = localStorage.getItem( 'token' );
+    if( !token ){
+      throw new Error( 'Please login to add a bookmark!' );
+    }
+    const decodedToken = jwtDecode( token );
+    const userId = decodedToken.id;
+    return { userId, token };
+  }
+
+    const handleBookmarkClick = async ( item ) => {
+      try{
+        const { userId, token } = getUserId();
+        if( !userId ){
+          setItemInfo(( prevInfo ) => ({
+            ...prevInfo,
+            toggleErrorMessage: true, 
+            errorMessage: 'Please login to add a bookmark!'
+          }));
+          return;
+        }
+        const existingBookmark = bookmarks.find(( bookmark ) => bookmark.response_data.id === item.id );
+        if( existingBookmark ){
+          setItemInfo(( prevInfo ) => ({
+            ...prevInfo,
+            toggleErrorMessage: true,
+            errorMessage: `Bookmark with AirportID: ${ item.id } is already in your bookmarks!`,
+            chosenItem: item,
+          }));
+          return;
+        }
+
+        const info = {
+            userId,
+            endpoint: AIRPORTS_ENDPOINT_BASE,
+            responseData: item, 
+            notes: itemInfo.notes,
+          };
+
+        const response = await axios.post( '/bookmark/add', info, {
+          headers: {
+            Authorization: `Bearer ${ token }`
+          }
+        });
+        console.log( response.data );
+        
+        setBookmarks( ( prevBookmarks ) => [
+          ...prevBookmarks,
+          response.data
+        ]);
+
+        setItemInfo(( prevInfo ) => ({
+          ...prevInfo,
+          toggleSuccessMessage: true,
+          successMessage: `Bookmark successfully added for AirportID: ${ item.id }`,
+          chosenItem: item,
+          newBookmarkId: response.data.id,
+          toggleNotes: false,
+          notes: '',
+        }));
+      }
+    
+      catch( error ){
+        console.error( `Error occurred adding bookmark!` );
+        console.error( error );
+      }
+    }
+
+    const handleAddBookmarkWithNotes = async () => {
+    try {
+      const { userId, token } = getUserId();
+      if (!userId) {
+        setItemInfo((prevInfo) => ({
+          ...prevInfo,
+          toggleErrorMessage: true,
+          errorMessage: 'Please login to add a bookmark!'
+        }));
+        return;
+      }
+
+      const existingBookmark = bookmarks.find((bookmark) => bookmark.response_data.id === itemInfo.chosenItem.id);
+      if (existingBookmark) {
+        setItemInfo((prevInfo) => ({
+          ...prevInfo,
+          toggleErrorMessage: true,
+          errorMessage: `Bookmark with AirportID: ${ itemInfo.chosenItem.id } is already in your bookmarks!`,
+        }));
+        return;
+      }
+
+      const info = {
+        userId,
+        endpoint: AIRPORTS_ENDPOINT_BASE,
+        responseData: itemInfo.chosenItem,
+        notes: itemInfo.notes,
+      };
+
+      const response = await axios.post( '/bookmark/add', info, {
+        headers: {
+          Authorization: `Bearer ${ token }`
+        }
+      });
+
+      setBookmarks((prevBookmarks) => [
+        ...prevBookmarks,
+        response.data
+      ]);
+
+      setItemInfo((prevInfo) => ({
+        ...prevInfo,
+        toggleSuccessMessage: true,
+        successMessage: `Bookmark successfully added for AirportID: ${ itemInfo.chosenItem.id }`,
+        newBookmarkId: response.data.id
+      }));
+    } catch (error) {
+      console.error(`Error occurred adding bookmark with notes!`);
+      console.error(error);
+    }
+  }
+
+
+    const handleAddNoteClick = (item) => {
+      setItemInfo((prevInfo) => ({
+        ...prevInfo,
+        toggleNotes: true,
+        chosenItem: item,
+      }));
+    }
+
+    const handleCloseNotes = () => {
+      setItemInfo( ( prevInfo ) => ({
+        ...prevInfo,
+        toggleNotes: false,
+        notes: '',
+      }));
+    }
 
     return(
-        <div className = 'information-block'>
-            { data.map(( item, index ) => (
-                <Card 
-                    key = { index }
-                    sx = {{ 
-                        alignItems: 'center',
-                        backgroundColor: '#212121',
-                        border: '3px solid white',
-                        borderRadius: '4px',
-                        color: 'cyan',
-                        fontSize: 'xx-large',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        width: '38rem',
-                        height: selectedBoxIndex === index ? 'auto' : '13rem',
-                        margin: 'auto',
-                        marginBottom: '10px' ,
-                        textAlign: 'center',
-                        width: '38vw',
+        <div className = "information-block">
+      {data.map(( item, index ) => (
+        <Card 
+            key = { index } 
+            sx = {{ 
+                  alignItems: 'center',
+                  backgroundColor: '#212121',
+                  border: '.2rem solid white',
+                  borderRadius: '1rem',
+                  color: 'cyan',
+                  fontSize: 'xx-large',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  width: '38rem',
+                  height: selectedBoxIndex === index ? 'auto' : '13rem',
+                  margin: 'auto',
+                  marginBottom: '10px' ,
+                  textAlign: 'center',
+                  width: '38vw',
+        }}
+        > 
+          <CardContent >
+            <Typography
+              variant = 'h4'
+            >
+            <span style = {{ fontSize: '2rem', color: 'white' }}>
+            <FlightTakeoff fontSize = 'large'></FlightTakeoff>
+            </span>
+            </Typography>
+            <div 
+              style = {{
+                display: 'flex',
+                justifyContent: 'center',
               }}
+            >
+              <Typography 
+                variant = 'h6'
+                style = {{
+                  color: 'white',
+                  marginRight: '1rem'
+                }}
+                > 
+                AirportID:
+              </Typography>
+              <Typography
+                variant = 'h6'
+                style = {{
+                  color: 'cyan'
+                }}
+                >
+                { item.id }
+              </Typography>
+            </div>
+            <div 
+                style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
               >
-                <CardContent>
-                    <Typography
-                        variant = 'h4'
-                    >
-                    <span style = {{ fontSize: '2rem', color: 'white' }}>
-                        <FlightTakeoff fontSize = 'large'></FlightTakeoff>
-                    </span>
-                    </Typography>
-                    <div 
-                        style = {{
-                        display: 'flex',
-                        justifyContent: 'center',
+                <Typography 
+                  variant = 'h6'
+                  style = {{
+                    color: 'white',
+                    marginRight: '1rem'
+                  }}
+                >
+                Airport Name:
+                </Typography>
+                <Typography 
+                  variant = 'h6'
+                  style = {{
+                    color: 'cyan'
+                  }}
+                >
+                { item.airport_name }
+                </Typography>
+              </div>
+              <div 
+                style = {{
+                display: 'flex',
+                justifyContent: 'center',
+                }}
+                >
+                <Typography 
+                    variant = 'h6'
+                    style = {{
+                        color: 'white',
+                        marginRight: '1rem'
+                }}
+                > 
+                Country ISO:
+                </Typography> 
+                <Typography 
+                    variant = 'h6'
+                    sx = {{
+                        color: 'cyan'
                     }}
-                    >
-                    <Typography 
-                        variant = 'h6'
-                        style = {{
-                            color: 'white',
-                            marginRight: '1rem'
-                    }}
-                    > 
-                    Airport ID:
-                    </Typography> 
-                    <Typography 
-                        variant = 'h6'
-                        sx = {{
-                            color: 'cyan'
-                        }}
-                    >
-                    { item.id }    
-                    </Typography>
-                    </div>
-                    <div 
-                        style = {{
-                        display: 'flex',
-                        justifyContent: 'center',
-                    }}
-                    >
-                    <Typography 
-                        variant = 'h6'
-                        style = {{
-                            color: 'white',
-                            marginRight: '1rem'
-                    }}
-                    > 
-                    Airport Name:
-                    </Typography> 
-                    <Typography 
-                        variant = 'h6'
-                        sx = {{
-                            color: 'cyan'
-                        }}
-                    >
-                    { item.airport_name }    
-                    </Typography>
-
-                    </div>
-                    <div 
-                        style = {{
-                        display: 'flex',
-                        justifyContent: 'center',
-                    }}
-                    >
-                    <Typography 
-                        variant = 'h6'
-                        style = {{
-                            color: 'white',
-                            marginRight: '1rem'
-                    }}
-                    > 
-                    Country ISO:
-                    </Typography> 
-                    <Typography 
-                        variant = 'h6'
-                        sx = {{
-                            color: 'cyan'
-                        }}
-                    >
-                    { item.country_iso2 }    
-                    </Typography>
-                    </div>
-                    { selectedBoxIndex === index && (
+                >
+                { item.country_iso2 }    
+                </Typography>
+                </div>
+                { selectedBoxIndex === index && (
                         <>
                             <div
                                 style = {{
@@ -333,15 +505,324 @@ function AirportsInformationBlock({ data }){
                                 fontWeight: 'bold'
                             },
                         }} 
-                    onClick = { () => displayFullDetails( index ) }
+                    onClick = { () => handleBookmarkClick( item ) }
                     >
                         Bookmark
                     </Button> 
-                </CardContent>
-              </Card>
-            ))}
-        </div>
-    )
-}
+            <Button
+                type='submit'
+                variant='outlined'
+                color='primary'
+                component='span'
+                sx={{
+                    color: 'cyan',
+                    borderColor: 'cyan',
+                    fontWeight: 'bold',
+                      '&:hover': {
+                        color: '#212121',
+                        borderColor: 'white',
+                        backgroundColor: 'cyan',
+                        fontWeight: 'bold'
+                    },
+                }}
+                onClick={ () => handleAddNoteClick( item ) }
+              >
+              Add Note
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+ 
+<Dialog 
+  open = { itemInfo.toggleSuccessMessage }
+  onClose = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) }
+  fullWidth
+  maxWidth = 'md'
+  style = {{
+  }}
+>
+  <DialogTitle
+    style={{
+      backgroundColor: '#212121',
+      border: '.2rem solid white',
+      color: 'cyan',
+      display: 'flex',
+      fontSize: 'xx-large',
+      justifyContent: 'center',
+    }}
+  >
+  {`Bookmark Added For AirportID: ${ itemInfo.chosenItem?.id }`}
+  </DialogTitle>
+  <DialogContent
+    style={{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      color: 'white',
+    }}
+  >
+    <DialogContentText
+      style={{
+        backgroundColor: '#212121',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'x-large',
+        justifyContent: 'center',
+      }}
+    >
+      { itemInfo.successMessage }
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions
+    style = {{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      borderBottom: '.2rem solid white',
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center'
+    }}
+  >
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+        }}
+      >
+      Undo
+      </Button>
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleSuccessMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+          }}
+        >
+        Close
+        </Button>
+      </DialogActions>
+  </Dialog>
 
-export default AirportsInformationBlock;
+<Dialog 
+  open = { itemInfo.toggleErrorMessage }
+  onClose = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) }
+  fullWidth
+  maxWidth = 'md'
+>
+  <DialogTitle
+    style={{
+      backgroundColor: '#212121',
+      border: '.2rem solid white',
+      color: 'cyan',
+      display: 'flex',
+      fontSize: 'xx-large',
+      justifyContent: 'center',
+    }}
+  >
+  {`Bookmark Exists For AirlineID: ${ itemInfo.chosenItem?.id }`}
+  </DialogTitle>
+  <DialogContent
+    style={{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      color: 'white',
+    }}
+  >
+    <DialogContentText
+      style={{
+        backgroundColor: '#212121',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'x-large',
+        justifyContent: 'center',
+      }}
+    >
+      { itemInfo.errorMessage }
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions
+    style = {{
+      backgroundColor: '#212121',
+      borderLeft: '.2rem solid white',
+      borderRight: '.2rem solid white',
+      borderBottom: '.2rem solid white',
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center'
+    }}
+  >
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+        }}
+      >
+      Undo
+      </Button>
+      <Button 
+        onClick = { () => setItemInfo(( prevInfo ) => ({ ...prevInfo, toggleErrorMessage: false })) } 
+        color="primary"
+        type='submit'
+        variant='outlined'
+        component='span'
+        sx = {{
+            color: 'cyan',
+            borderColor: 'cyan',
+            fontWeight: 'bold',
+              '&:hover': {
+                color: '#212121',
+                borderColor: 'white',
+                backgroundColor: 'cyan',
+                fontWeight: 'bold'
+            },
+          }}
+        >
+        Close
+        </Button>
+      </DialogActions>
+  </Dialog>
+
+  <Dialog 
+    open = { itemInfo.toggleNotes } 
+    onClose = { handleCloseNotes }
+    fullWidth
+    maxWidth = 'md'
+  >
+    <DialogTitle
+      style={{
+        backgroundColor: '#212121',
+        border: '.2rem solid white',
+        color: 'cyan',
+        display: 'flex',
+        fontSize: 'xx-large',
+        justifyContent: 'center',
+      }}
+    >
+    Add Note
+    </DialogTitle>
+        <DialogContent
+          style={{
+            backgroundColor: '#212121',
+            borderLeft: '.2rem solid white',
+            borderRight: '.2rem solid white',
+            color: 'white',
+          }}
+        >
+          <DialogContentText
+            style={{
+              backgroundColor: '#212121',
+              color: 'cyan',
+              display: 'flex',
+              fontSize: 'x-large',
+              justifyContent: 'center',
+            }}
+          >
+            Add a note for { itemInfo.chosenItem ? itemInfo.chosenItem.airline_name : '' }
+          </DialogContentText>
+          <textarea
+            rows = '5'
+            cols = '75' 
+            placeholder="Enter your notes here..."
+            value = { itemInfo.notes }
+            onChange={ (e) => setItemInfo((prevInfo) => ({ ...prevInfo, notes: e.target.value })) }
+            style = {{ 
+              backgroundColor: '#212121',
+              color: 'cyan',
+              fontSize: 'x-large',
+              resize: 'none' 
+            }}
+          />
+        </DialogContent>
+        <DialogActions
+          style = {{
+            backgroundColor: '#212121',
+            borderLeft: '.2rem solid white',
+            borderRight: '.2rem solid white',
+            borderBottom: '.2rem solid white',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
+          <Button 
+            onClick = { handleCloseNotes }
+            color="primary"
+            type='submit'
+            variant='outlined'
+            component='span'
+            sx = {{
+                color: 'cyan',
+                borderColor: 'cyan',
+                fontWeight: 'bold',
+                  '&:hover': {
+                    color: '#212121',
+                    borderColor: 'white',
+                    backgroundColor: 'cyan',
+                    fontWeight: 'bold'
+            },
+        }}
+          >
+          Cancel
+          </Button>
+          <Button 
+            onClick = { handleAddBookmarkWithNotes } 
+            variant="outlined" 
+            color="primary"
+            type='submit'
+            component='span'
+            sx = {{
+                color: 'cyan',
+                borderColor: 'cyan',
+                fontWeight: 'bold',
+                  '&:hover': {
+                    color: '#212121',
+                    borderColor: 'white',
+                    backgroundColor: 'cyan',
+                    fontWeight: 'bold'
+            },
+          }}
+          >
+          Save Note
+          </Button>
+        </DialogActions>
+      </Dialog>
+</div>)}
+
+export default AirplanesInformationBlock;
