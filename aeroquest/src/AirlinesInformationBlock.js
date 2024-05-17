@@ -212,8 +212,7 @@ function AirplanesInformationBlock({ data }) {
                   height: selectedBoxIndex === index ? 'auto' : '13rem',
                   margin: 'auto',
                   marginBottom: '10px' ,
-                  textAlign: 'center',
-                  width: '38vw',
+                  textAlign: 'center'
         }}
         > 
           <CardContent >

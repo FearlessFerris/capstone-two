@@ -72,6 +72,7 @@ router.delete('/remove/:bookmarkId', authorizationMiddleware, async (req, res) =
     }
   });
   
+
 // Modify Bookmark
 router.put('/modify/:bookmarkId', authorizationMiddleware, async (req, res) => {
     try {
