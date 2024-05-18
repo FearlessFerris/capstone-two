@@ -4,6 +4,7 @@
 // Dependencies 
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Router, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Typography } from '@mui/material';
 
 
 // Components & Necessary Files 
@@ -28,16 +29,19 @@ function Home() {
                 <div className = 'message-container'
                     style = {{ 
                         display: 'flex',
-                        margin: '50px',
+                        marginTop: '6rem',
                         justifyContent: 'center'
                 }}
                 >
-                    <p className = 'message' 
-                    sx = {{ 
-                        color: 'white',
-                        textAlign: 'center',
-                    }}
-                    >{message}</p>
+                    <Typography
+                        variant = 'h5'
+                        style = {{
+                            color: 'white',
+                            textAlign: 'center'
+                        }}
+                    >
+                    { message }    
+                    </Typography>
                 </div>
             )}
             <SearchBar searchResults = { searchResults } setSearchResults = { setSearchResults }/>

@@ -233,7 +233,7 @@ function AirplanesInformationBlock({ data }) {
                   width: '38rem',
                   height: selectedBoxIndex === index ? 'auto' : '13rem',
                   margin: 'auto',
-                  marginBottom: '10px' ,
+                  marginBottom: '1rem' ,
                   textAlign: 'center'
         }}
         > 

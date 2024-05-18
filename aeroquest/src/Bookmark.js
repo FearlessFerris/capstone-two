@@ -17,9 +17,10 @@ import { jwtDecode } from 'jwt-decode';
 function Bookmark() {
 
     const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
-    const [bookmarks, setBookmarks] = useState([]);
+    const [ bookmarks, setBookmarks ] = useState([]);
     const [ visibleBookmarks, setVisibleBookmarks ] = useState([]);
     const [ loading, setLoading ] = useState( true );
+    const [ notes, setNotes ] = useState( '' );
     const getUserId = () => {
         const token = localStorage.getItem( 'token' );
         const userId = jwtDecode( token ).id;
@@ -49,20 +50,35 @@ function Bookmark() {
     }, []);
 
     useEffect(() => {
-        if (!loading && bookmarks.length > 0) {
-          bookmarks.forEach((_, index) => {
+        if ( !loading && bookmarks.length > 0 ) {
+          bookmarks.forEach(( _, index ) => {
             setTimeout(() => {
-              setVisibleBookmarks((prevVisible) => [...prevVisible, index]);
-            }, index * 300); // Adjust the delay as needed
+              setVisibleBookmarks(( prevVisible ) => [ ...prevVisible, index ]);
+            }, index * 300); 
           });
         }
-      }, [loading, bookmarks]);
+      }, [ loading, bookmarks ]);
     
     const displayFullDetails = ( index ) => {
         setSelectedBoxIndex(( previousIndex ) => (
             previousIndex === index ? null : index
         ));
     };
+
+    const handleEditNotes = async ( index ) => {
+        try{
+            const { userId, token } = getUserId();
+            const response = await axios.put( `/bookmarks/modify/${ index }`, {
+                headers: {
+                    Authorization: `Bearer ${ token }`
+                }
+            });
+            console.log( response.data );
+        }
+        catch( error ){
+            console.error( error );
+        }
+    }
 
     return (
         <div 
@@ -526,6 +542,7 @@ function Bookmark() {
                                 fontWeight: 'bold'
                             },
                         }} 
+                        onClick={ () => handleEditNotes( index ) }
                         >
                         Edit Notes
                         </Button>
