@@ -42,7 +42,7 @@ function App({ history }) {
 
   const fetchUserProfile = async ( token ) => {
     try {
-      const response = await axios.get( '/users/profile', {
+      const response = await axios.get( `/users/profile/${ decodedToken.id }`, {
         headers: { Authorization: `Bearer ${ token }` },
       });
       setUserProfile( response.data.data ); 
@@ -66,11 +66,16 @@ function App({ history }) {
   return (
     <div className = 'application-container'>
       <BrowserRouter>
-        <NavBar  isLoggedIn = { isLoggedIn } handleLogout = { handleLogout } clearSearchResults = { clearSearchResults }/>
+        <NavBar  
+        isLoggedIn = { isLoggedIn } 
+        handleLogout = { handleLogout } 
+        clearSearchResults = { clearSearchResults }
+        userProfile = { userProfile }
+        />
           <Routes> 
             <Route path = '/' element = { <Home /> } />
             <Route path = '/users/profile' element = { <Profile /> } />
-            <Route path = '/users/login' element = { <Login  setIsLoggedIn = { setIsLoggedIn } /> } /> 
+            <Route path = '/users/login' element = { <Login  setIsLoggedIn = { setIsLoggedIn } setUserProfile = { setUserProfile } /> } /> 
             <Route path = '/users/create' element = { <CreateUser /> } />
             <Route path = '/users/bookmark' element = { <Bookmark /> } /> 
           </Routes>

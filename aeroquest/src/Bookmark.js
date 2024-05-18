@@ -3,7 +3,7 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react'
-import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from '@mui/material';
+import { Button, Card, CardContent, Collapse, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import BookmarksIcon from '@mui/icons-material/Bookmarks';
 import axios from 'axios';
@@ -16,7 +16,10 @@ import { jwtDecode } from 'jwt-decode';
 // Bookmark Component 
 function Bookmark() {
 
+    const [ selectedBoxIndex, setSelectedBoxIndex ] = useState( null );
     const [bookmarks, setBookmarks] = useState([]);
+    const [ visibleBookmarks, setVisibleBookmarks ] = useState([]);
+    const [ loading, setLoading ] = useState( true );
     const getUserId = () => {
         const token = localStorage.getItem( 'token' );
         const userId = jwtDecode( token ).id;
@@ -34,17 +37,32 @@ function Bookmark() {
                     }
                 });   
                 setBookmarks( response.data.bookmarks );  
+                setLoading( false );
                 console.log( bookmarks );    
             }
             catch( error ){
                 console.error( `Error fetching bookmarks`, error );
+                setLoading( false );
             }
         }
             fetchBookmarks();
     }, []);
+
+    useEffect(() => {
+        if (!loading && bookmarks.length > 0) {
+          bookmarks.forEach((_, index) => {
+            setTimeout(() => {
+              setVisibleBookmarks((prevVisible) => [...prevVisible, index]);
+            }, index * 300); // Adjust the delay as needed
+          });
+        }
+      }, [loading, bookmarks]);
     
-
-
+    const displayFullDetails = ( index ) => {
+        setSelectedBoxIndex(( previousIndex ) => (
+            previousIndex === index ? null : index
+        ));
+    };
 
     return (
         <div 
@@ -55,7 +73,7 @@ function Bookmark() {
         >
             <Card
                 sx = {{ 
-                    alignItems: 'top',
+                    alignItems: 'center',
                     backgroundColor: '#212121',
                     border: '.2rem solid white',
                     borderRadius: '1rem',
@@ -66,18 +84,30 @@ function Bookmark() {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     width: '38rem',
-                    height: '9rem',
+                    height: '5rem',
                     margin: '2rem',
                     textAlign: 'center'
             }}
             >
-            <span style = {{ display: 'flex', margin: '.2rem', fontSize: '2rem', color: 'white ' }}>
+            <span style = {{ 
+                display: 'flex', 
+                margin: '.3rem', 
+                fontSize: '2rem', 
+                color: 'white ' 
+            }}
+            >
                 <BookmarksIcon fontSize = 'large'></BookmarksIcon>
             </span>
             Bookmarks    
             </Card>
-            { bookmarks.map(( item, index ) => (
-                <Card 
+            { loading ? (
+                <Typography variant="h6" style={{ color: 'cyan', textAlign: 'center' }}>
+                Loading bookmarks...
+              </Typography>
+            ):( 
+                 bookmarks.map(( item, index ) => (
+                    <Fade in = { visibleBookmarks.includes(index) } timeout = { 1000 } key = { index }>
+                    <Card 
                 key = { index } 
                 sx = {{ 
                       alignItems: 'center',
@@ -91,77 +121,53 @@ function Bookmark() {
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
                       width: '38rem',
-                      height: '11rem',
+                      height: selectedBoxIndex === index ? 'auto' : '11rem',
                       margin: 'auto',
-                      marginBottom: '10px' ,
+                      marginBottom: '1rem' ,
                       textAlign: 'center'
-            }}
-            >
-                <CardContent>
+                    }}
+                    >
+                    <CardContent>
                     <div 
-                        variant = 'h6'
-                        style = {{
-                            display: 'flex',
-                            justifyContent: 'center'
-                        }}
+                    variant = 'h6'
+                    style = {{
+                        display: 'flex',
+                        justifyContent: 'center'
+                    }}
                     > 
-                        <Typography
-                            variant = 'h6'
-                            style = {{
-                                color: 'white',
-                                marginRight: '1rem'
-                            }}
-                        >
-                        Item ID:
-                        </Typography>
-                        <Typography
-                            variant = 'h6'
-                            style = {{
-                                color: 'cyan'
-                            }}
-                        >
-                        { item.id }
+                    <Typography
+                    variant = 'h6'
+                    style = {{
+                        color: 'white',
+                        marginRight: '1rem'
+                    }}
+                    >
+                    Item ID:
+                    </Typography>
+                    <Typography
+                    variant = 'h6'
+                    style = {{
+                        color: 'cyan'
+                    }}
+                    >
+                        { console.log( item.response_data.id ) }
+                        { item.response_data.id }
                         </Typography>
                     </div>
-                    <div 
-                        variant = 'h6'
-                        style = {{
-                            display: 'flex',
-                            justifyContent: 'center'
-                        }}
-                    >
+                <div 
+                variant = 'h6'
+                style = {{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+                >
                         <Typography
                             variant = 'h6'
                             style = {{
                                 color: 'white',
                                 marginRight: '1rem'
                             }}
-                        >
-                        Endpoint:     
-                        </Typography>
-                        <Typography
-                            variant = 'h6'
-                            style = {{
-                                color: 'cyan'
-                            }}
-                        >
-                        { item.endpoint }     
-                        </Typography>
-                    </div>
-                    <div 
-                        variant = 'h6'
-                        style = {{
-                            display: 'flex',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <Typography
-                            variant = 'h6'
-                            style = {{
-                                color: 'white',
-                                marginRight: '1rem'
-                            }}
-                        >
+                            >
                         Aircraft Information:     
                         </Typography>
                         <Typography
@@ -169,32 +175,383 @@ function Bookmark() {
                             style = {{
                                 color: 'cyan'
                             }}
-                        >
+                            >
                         { item.response_data.model_name }   
                         { console.log( item.response_data )}
                         </Typography>
                         </div>
-                        <Button 
-                            type = 'submit'
-                            variant = 'outlined'
-                            color = 'primary'
-                            component = 'span'
-                            sx = {{
-                                color: 'cyan',
-                                borderColor: 'cyan',
-                                fontWeight: 'bold',
-                                '&:hover': {
-                                    color: '#212121',
-                                    borderColor: 'white',
-                                    backgroundColor: 'cyan',
-                                    fontWeight: 'bold'
-                                },
-                            }} 
+                        { selectedBoxIndex === index && (
+                            <>
+                            <div 
+                            variant = 'h6'
+                            style = {{
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}
+                            >   
+                            <Typography
+                                variant = 'h6'
+                                style = {{
+                                    color: 'white',
+                                    marginRight: '1rem'
+                                }}
+                                >
+                            Plane Age:     
+                            </Typography>
+                            <Typography
+                                variant = 'h6'
+                                style = {{
+                                    color: 'cyan'
+                                }}
+                                >
+                            { item.response_data.plane_age }
+                            </Typography>
+                        </div>
+                        <div 
+                        style = {{
+                            display: 'flex',
+                            justifyContent: 'center'
+                        }}
                         >
-                        Show     
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Plane Series: 
+                </Typography> 
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                 { item.response_data.plane_series } 
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Plane Status:
+                </Typography>
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.plane_status }
+                </Typography>
+              </div>
+              <div 
+                style = {{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+                >
+              { item.response_data.engines_count && (
+                  <>
+                  <Typography
+                    variant = 'h6'
+                    style = {{
+                        color: 'white',
+                        marginRight: '1rem'
+                    }}
+                    >
+                  Engines Count:
+                  </Typography>
+                  <Typography 
+                    variant = 'h6'
+                    style = {{
+                        color: 'cyan'
+                    }}
+                    >
+                  { item.response_data.engines_count }
+                  </Typography>
+                </>
+              )}
+              </div>
+              <div 
+                style = {{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+                >
+              { item.response_data.engines_type && (
+                  <>
+                  <Typography
+                    variant = 'h6'
+                    style = {{
+                        color: 'white',
+                        marginRight: '1rem'
+                    }}
+                    >
+                  Engines Type:
+                  </Typography>
+                  <Typography 
+                    variant = 'h6'
+                    style = {{
+                        color: 'cyan'
+                    }}
+                    >
+                  { item.response_data.engines_type }
+                  </Typography>
+                </>
+              )}
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography 
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Construction Number:
+                </Typography>
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.construction_number }
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Regristration Number:
+                </Typography>
+                <Typography 
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.registration_number }  
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Production Line: 
+                </Typography>
+                <Typography 
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.production_line } 
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography 
+                  variant = 'h6'
+                  sx = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                Delivery Date:  
+                </Typography>
+                <Typography
+                  variant = 'h6'
+                  sx = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.delivery_date }  
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                    >
+                First Flight Date:
+                </Typography>
+                <Typography
+                  variant = 'h6'
+                  style = {{
+                      color: 'cyan'
+                    }}
+                    >
+                { item.response_data.first_flight_date } 
+                </Typography>
+              </div>
+              <div 
+              style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+                >
+              { item.response_data.plane_owner && (
+                  <>
+                  <Typography
+                    variant = 'h6'
+                    style = {{
+                        color: 'white',
+                        marginRight: '1rem'
+                    }}
+                    >
+                  Plane Owner:
+                  </Typography>
+                  <Typography 
+                    variant = 'h6'
+                    style = {{
+                        color: 'cyan'
+                    }}
+                    >
+                  { item.response_data.plane_owner }
+                  </Typography>
+                </>
+                )}
+              </div>
+              <div 
+                style = {{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+                >
+                { item.notes && (
+                    <>
+                    <Typography
+                        variant = 'h6'
+                        style = {{
+                            color: 'white',
+                            marginRight: '1rem'
+                        }}
+                        >
+                    Notes:     
+                    </Typography>
+                    <Typography 
+                        variant = 'h6'
+                        style = {{
+                            color: 'cyan'
+                        }}
+                        >
+                    { item.notes }    
+                    </Typography>
+                    </>
+                )}
+                </div>
+                </>
+              )}
+              <Button 
+              type = 'submit'
+              variant = 'outlined'
+              color = 'primary'
+              component = 'span'
+              sx = {{
+                  color: 'cyan',
+                  borderColor: 'cyan',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                      color: '#212121',
+                      borderColor: 'white',
+                      backgroundColor: 'cyan',
+                      fontWeight: 'bold'
+                    },
+                }} 
+                onClick = { () => displayFullDetails( index ) }
+                >
+                        { selectedBoxIndex === index ? 'Hide Details' : 'Show Details' }    
+                        </Button>
+                        <Button 
+                        type = 'submit'
+                        variant = 'outlined'
+                        color = 'primary'
+                        component = 'span'
+                        sx = {{
+                            color: 'cyan',
+                            borderColor: 'cyan',
+                            fontWeight: 'bold',
+                            margin: '1rem',
+                            '&:hover': {
+                                color: '#212121',
+                                borderColor: 'white',
+                                backgroundColor: 'cyan',
+                                fontWeight: 'bold'
+                            },
+                        }} 
+                        >
+                        Edit Notes
+                        </Button>
+                        <Button 
+                        type = 'submit'
+                        variant = 'outlined'
+                        color = 'primary'
+                        component = 'span'
+                        sx = {{
+                            color: 'cyan',
+                            borderColor: 'cyan',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                                color: '#212121',
+                                borderColor: 'white',
+                                backgroundColor: 'cyan',
+                                fontWeight: 'bold'
+                            },
+                        }} 
+                        >
+                        Remove
                         </Button>
                 </CardContent>
-            </Card>
+                </Card>
+                </Fade>
+                )
             ))}
         </div>
     );

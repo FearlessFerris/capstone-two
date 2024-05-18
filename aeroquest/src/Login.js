@@ -15,7 +15,7 @@ axios.defaults.baseURL = 'http://localhost:5000';
 
 
 // Login Component 
-function Login({ setIsLoggedIn }) {
+function Login({ setIsLoggedIn, setUserProfile }) {
 
     const navigate = useNavigate();
 
@@ -48,6 +48,14 @@ function Login({ setIsLoggedIn }) {
 
                 const decodedToken = jwtDecode( token );
                 console.log( `Decoded Token:`, decodedToken );
+
+                const userProfileResponse = await axios.get(`/users/profile/${ decodedToken.id }`, {
+                    headers: {
+                        Authorization: `Bearer ${ token }`
+                    }
+                });
+                console.log( userProfileResponse.data.data );
+                setUserProfile( userProfileResponse.data.data );
 
                 navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
             }

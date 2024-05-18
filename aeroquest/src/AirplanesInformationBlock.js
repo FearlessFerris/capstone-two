@@ -27,6 +27,7 @@ function AirplanesInformationBlock({ data }) {
     chosenItem: null, 
     notes: '',
     newBookmarkId: null,
+    actionType: '',
   });
 
   useEffect( () => {
@@ -76,7 +77,14 @@ function AirplanesInformationBlock({ data }) {
           }));
           return;
         }
+
+        if (!item || !item.id) {
+          throw new Error('Invalid item or item id');
+        }
+
         const existingBookmark = bookmarks.find(( bookmark ) => bookmark.response_data.id === item.id );
+        console.log(existingBookmark ? existingBookmark.id : 'No existing bookmark');
+        console.log(item.id);
         if( existingBookmark ){
           setItemInfo(( prevInfo ) => ({
             ...prevInfo,
@@ -99,11 +107,10 @@ function AirplanesInformationBlock({ data }) {
             Authorization: `Bearer ${ token }`
           }
         });
-        console.log( response.data );
         
         setBookmarks( ( prevBookmarks ) => [
           ...prevBookmarks,
-          response.data
+          response.data.bookmark
         ]);
 
         setItemInfo(( prevInfo ) => ({
@@ -111,9 +118,10 @@ function AirplanesInformationBlock({ data }) {
           toggleSuccessMessage: true,
           successMessage: `Bookmark successfully added for AirplaneId: ${ item.id }`,
           chosenItem: item,
-          newBookmarkId: response.data.id,
+          newBookmarkId: item.id,
           toggleNotes: false,
           notes: '',
+          actionType: 'added'
         }));
       }
     
@@ -134,22 +142,30 @@ function AirplanesInformationBlock({ data }) {
         }));
         return;
       }
-
-      const existingBookmark = bookmarks.find((bookmark) => bookmark.response_data.id === itemInfo.chosenItem.id);
+      
+      const existingBookmark = bookmarks.find((bookmark) => bookmark.response_data.id === itemInfo.chosenItem.id );
       if (existingBookmark) {
+        const updatedBookmark = { ...existingBookmark, notes: itemInfo.notes };
+        await axios.put( `/bookmark/modify/${ existingBookmark.id }`, updatedBookmark, {
+          headers: {
+            Authorization: `Bearer ${ token }`
+          }
+        });
         setItemInfo((prevInfo) => ({
           ...prevInfo,
-          toggleErrorMessage: true,
-          errorMessage: `Bookmark with AirplaneId: ${itemInfo.chosenItem.id} is already in your bookmarks!`,
+          toggleSuccessMessage: true,
+          successMessage: `Bookmark with AirplaneId: ${ itemInfo.chosenItem.id } was successfully updated!`,
+          toggleNotes: false,
+          notes: '',
+          actionType: 'updated'
         }));
-        return;
       }
-
-      const info = {
-        userId,
-        endpoint: AIRPLANES_ENDPOINT_BASE,
-        responseData: itemInfo.chosenItem,
-        notes: itemInfo.notes,
+      else{
+        const info = {
+          userId,
+          endpoint: AIRPLANES_ENDPOINT_BASE,
+          responseData: itemInfo.chosenItem,
+          notes: itemInfo.notes,
       };
 
       const response = await axios.post('/bookmark/add', info, {
@@ -157,26 +173,32 @@ function AirplanesInformationBlock({ data }) {
           Authorization: `Bearer ${token}`
         }
       });
-
+      console.log( `This is my response data!`, response.data )
+      
       setBookmarks((prevBookmarks) => [
         ...prevBookmarks,
         response.data
       ]);
-
+      
       setItemInfo((prevInfo) => ({
         ...prevInfo,
         toggleSuccessMessage: true,
-        successMessage: `Bookmark successfully added for AirplaneId: ${itemInfo.chosenItem.id}`,
-        newBookmarkId: response.data.id
+        successMessage: `Bookmark successfully added for AirplaneId: ${ itemInfo.chosenItem.id }`,
+        newBookmarkId: itemInfo.chosenItem.id
       }));
+
+      if (!response.data.id) {
+        throw new Error('No existing bookmark ID in response data');
+      }
+    }
     } catch (error) {
       console.error(`Error occurred adding bookmark with notes!`);
       console.error(error);
     }
   }
-
-
-    const handleAddNoteClick = (item) => {
+  
+  
+  const handleAddNoteClick = (item) => {
       setItemInfo((prevInfo) => ({
         ...prevInfo,
         toggleNotes: true,
@@ -321,6 +343,62 @@ function AirplanesInformationBlock({ data }) {
                 >
                 { item.plane_status }
                 </Typography>
+              </div>
+              <div 
+                style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+              >
+              { item.engines_count && (
+                <>
+                  <Typography
+                    variant = 'h6'
+                    style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                  >
+                  Engines Count:
+                  </Typography>
+                  <Typography 
+                    variant = 'h6'
+                    style = {{
+                      color: 'cyan'
+                    }}
+                  >
+                  { item.engines_count }
+                  </Typography>
+                </>
+              )}
+              </div>
+              <div 
+                style = {{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
+              >
+              { item.engines_type && (
+                <>
+                  <Typography
+                    variant = 'h6'
+                    style = {{
+                      color: 'white',
+                      marginRight: '1rem'
+                    }}
+                  >
+                  Engines Type:
+                  </Typography>
+                  <Typography 
+                    variant = 'h6'
+                    style = {{
+                      color: 'cyan'
+                    }}
+                  >
+                  { item.engines_type }
+                  </Typography>
+                </>
+              )}
               </div>
               <div 
                 style = {{
@@ -549,13 +627,13 @@ function AirplanesInformationBlock({ data }) {
     style={{
       backgroundColor: '#212121',
       border: '.2rem solid white',
-      color: 'cyan',
+      color: 'white',
       display: 'flex',
       fontSize: 'xx-large',
       justifyContent: 'center',
     }}
   >
-  {`Bookmark Added For AirplaneId: ${ itemInfo.chosenItem?.id }`}
+  { itemInfo.actionType === 'added' ? 'Bookmark Added' : 'Bookmark Updated' }
   </DialogTitle>
   <DialogContent
     style={{
@@ -641,13 +719,13 @@ function AirplanesInformationBlock({ data }) {
     style={{
       backgroundColor: '#212121',
       border: '.2rem solid white',
-      color: 'cyan',
+      color: 'white',
       display: 'flex',
       fontSize: 'xx-large',
       justifyContent: 'center',
     }}
   >
-  {`Bookmark Exists For AirplaneId: ${ itemInfo.chosenItem?.id }`}
+  { `Bookmark Exists` }
   </DialogTitle>
   <DialogContent
     style={{
@@ -733,7 +811,7 @@ function AirplanesInformationBlock({ data }) {
       style={{
         backgroundColor: '#212121',
         border: '.2rem solid white',
-        color: 'cyan',
+        color: 'white',
         display: 'flex',
         fontSize: 'xx-large',
         justifyContent: 'center',
@@ -758,7 +836,7 @@ function AirplanesInformationBlock({ data }) {
               justifyContent: 'center',
             }}
           >
-            Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.model_name : ''}
+          Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.model_name : ''}
           </DialogContentText>
           <textarea
             rows = '5'

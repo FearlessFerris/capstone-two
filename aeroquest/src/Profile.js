@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Card, CardHeader, Typography, TextField, Button } from '@mui/material'
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
@@ -33,7 +34,7 @@ function Profile() {
                         Authorization: `Bearer ${token}`, 
                     },
                 };
-                const response = await axios.get( '/users/profile', config );
+                const response = await axios.get( `/users/profile/${ config.id }`, config );
                 setProfile( response.data.data );
             }
             catch( error ){
@@ -87,7 +88,7 @@ function Profile() {
                 justifyContent: 'center',
                 height: isEditing ? '65rem' : '38rem',
                 flexDirection: 'column',
-                margin: '15vh',
+                margin: '6rem',
                 position: 'relative'
             }}
         >
@@ -104,11 +105,28 @@ function Profile() {
                     flexDirection: 'column',
                     justifyContent: 'flex-start',
                     textAlign: 'center',
-                    width: '600px',
+                    width: '38rem',
                     height: isEditing ? '100%' : 'auto',
                 }}
             >
+            <div
+                style = {{
+                    display: 'flex',
+                    margin: '1rem'
+                }}
+            >
+
+            <span 
+                style = {{ 
+                    display: 'flex',
+                    color: 'white',
+                    margin: '.3rem',
+                }}
+                >
+                <AccountBoxIcon fontSize = 'large'></AccountBoxIcon>
+            </span>
             Profile
+                </div>
 
                 <Box 
                     sx = {{
@@ -124,7 +142,7 @@ function Profile() {
                     sx = {{ 
                         width: 250, 
                         height: 250, 
-                        margin: '20px',
+                        margin: '2rem',
                         border: '3px solid white' 
                     }}
                     />

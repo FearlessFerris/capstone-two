@@ -11,9 +11,10 @@ import { AppBar, Avatar, Box, Toolbar, Typography, Button } from '@mui/material'
 
 
 // NavBar Component 
-function NavBar({ isLoggedIn, handleLogout, clearSearchResults }) {
+function NavBar({ isLoggedIn, handleLogout, clearSearchResults, userProfile }) {
 
     const navigate = useNavigate();
+    console.log( userProfile );
 
     const handleLogoutClick = () => {
         handleLogout();
@@ -49,7 +50,7 @@ function NavBar({ isLoggedIn, handleLogout, clearSearchResults }) {
                             borderRadius: '3px'
                         },
                     }}
-                    onClick = {{ handleHomeClick }}
+                    onClick = { handleHomeClick }
                     > 
                     Home </Typography>
 
@@ -121,7 +122,6 @@ function NavBar({ isLoggedIn, handleLogout, clearSearchResults }) {
                     > 
                     Logout </Typography>
                     </>
-
                     ) : (
                         <>
                     <Typography 
@@ -157,6 +157,13 @@ function NavBar({ isLoggedIn, handleLogout, clearSearchResults }) {
                     Create </Typography>
                 </>
                 )}
+
+                { userProfile && userProfile.image_url && (
+                        <Avatar
+                        src = { userProfile.image_url || '' }
+                        alt = { userProfile.username }
+                        />
+                    )}
                 </Box>
             </AppBar>
             </div>

@@ -117,7 +117,7 @@ router.post( '/create', async ( req, res, next ) => {
 
 
 // User Account Profile 
-router.get( '/profile', authorizationMiddleware, async ( req, res, next ) => {
+router.get( '/profile/:id', authorizationMiddleware, async ( req, res, next ) => {
     try{
         console.log( ACCESS_KEY );
         const userId = req.user.id;
