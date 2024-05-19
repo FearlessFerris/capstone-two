@@ -4,6 +4,7 @@
 // Dependencies 
 const express = require( 'express' );
 const cors = require( 'cors' );
+const path = require('path');  
 const app = express();
 const ExpressError = require( './ExpressError' );
 const port = 5000;
