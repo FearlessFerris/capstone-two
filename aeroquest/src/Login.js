@@ -42,21 +42,15 @@ function Login({ setIsLoggedIn, setUserProfile }) {
             const response = await axios.post( '/users/login', formData );
             if( response && response.data ){
                 const { token } = response.data;
-                console.log('Received Token:', token);
                 localStorage.setItem( 'token', token );
                 setIsLoggedIn( true );
-
                 const decodedToken = jwtDecode( token );
-                console.log( `Decoded Token:`, decodedToken );
-
                 const userProfileResponse = await axios.get(`/users/profile/${ decodedToken.id }`, {
                     headers: {
                         Authorization: `Bearer ${ token }`
                     }
                 });
-                console.log( userProfileResponse.data.data );
                 setUserProfile( userProfileResponse.data.data );
-
                 navigate( '/', { state: { message: `Welcome back ${ username }, hope you are well today!` } });
             }
         }

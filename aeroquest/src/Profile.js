@@ -86,7 +86,7 @@ function Profile() {
                 alignItems: 'center',
                 display: 'flex',
                 justifyContent: 'center',
-                height: isEditing ? '65rem' : '38rem',
+                height: isEditing ? '68rem' : '38rem',
                 flexDirection: 'column',
                 margin: '6rem',
                 position: 'relative'

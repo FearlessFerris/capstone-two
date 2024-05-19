@@ -55,7 +55,7 @@ router.get('/list/:userId', authorizationMiddleware, async (req, res) => {
   
 
 // Delete Bookmark
-router.delete('/remove/:bookmarkId', authorizationMiddleware, async (req, res) => {
+router.delete( '/remove/:bookmarkId', authorizationMiddleware, async ( req, res ) => {
     try {
       const userId = req.user.id;
       const { bookmarkId } = req.params;
@@ -74,7 +74,7 @@ router.delete('/remove/:bookmarkId', authorizationMiddleware, async (req, res) =
   
 
 // Modify Bookmark
-router.put('/modify/:bookmarkId', authorizationMiddleware, async (req, res) => {
+router.put( '/modify/:bookmarkId', authorizationMiddleware, async ( req, res ) => {
     try {
       const userId = req.user.id;
       const { bookmarkId } = req.params;
