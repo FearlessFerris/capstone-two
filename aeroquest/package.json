@@ -43,7 +43,7 @@
     "webpack": "^5.91.0"
   },
   "scripts": {
-    "start": "node server/app.js",
+    "start": "react-scripts start",
     "build": "cd client && npm install && npm run build",
     "heroku-postbuild": "npm run build",
     "test": "cd client && npm test"
