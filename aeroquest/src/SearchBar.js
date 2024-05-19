@@ -22,7 +22,7 @@ function SearchBar({ searchResults, setSearchResults }) {
     const [ loading, setLoading ] = useState( false );
     const [ selectedType, setSelectedType ] = useState( 'airplanes' );
     const [ visibleSearchResults, setVisibleSearchResults ] = useState([]);
-    const [ itemVisibility, setItemVisibility ] = useState({});
+    const [searchResultVisibility, setSearchResultVisibility] = useState({});
 
     const handleChange = ( e ) => {
         setSearchTerm( e.target.value );
@@ -47,37 +47,37 @@ function SearchBar({ searchResults, setSearchResults }) {
 
     const fetchResults = async () => {
         try {
-          setLoading(true);
-          setVisibleSearchResults([]);
-          const response = await axios.get(`/search/${selectedType}`, {
-            params: { searchTerm, offset, limit },
-          });
-          const newResults = response.data.data;
-          const updatedVisibility = {};
-          newResults.forEach((result, index) => {
-            updatedVisibility[index] = false;
-            setTimeout(() => {
-              setItemVisibility((prevState) => ({ ...prevState, [index]: true }));
-              setVisibleSearchResults((prevResults) => [...prevResults, result]);
-            }, index * 300);
-          });
-          setItemVisibility(updatedVisibility);
-          setOffset((previousOffset) => previousOffset + limit);
+            setLoading(true);
+            setVisibleSearchResults([]);
+            const response = await axios.get(`/search/${selectedType}`, {
+                params: { searchTerm, offset, limit },
+            });
+            const newResults = response.data.data;
+            const updatedVisibility = {};
+            newResults.forEach((result, index) => {
+                updatedVisibility[index] = false;
+                setTimeout(() => {
+                    setSearchResultVisibility((prevState) => ({ ...prevState, [index]: true }));
+                    setVisibleSearchResults((prevResults) => [...prevResults, result]);
+                }, index * 700);
+            });
+            setSearchResultVisibility(updatedVisibility);
+            setOffset((previousOffset) => previousOffset + limit);
         } catch (error) {
-          console.error(`Error Fetching Results of ${searchTerm}`);
+            console.error(`Error Fetching Results of ${searchTerm}`);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
+    };
 
     const renderInformationBlock = () => {
         return searchResults.map((result, index) => (
             <Fade
                 key={index}
-                in={itemVisibility[index]}
+                in={searchResultVisibility[index]}
                 timeout={1000}
                 unmountOnExit
-                onExited={() => setItemVisibility((prevState) => ({
+                onExited={() => setSearchResultVisibility((prevState) => ({
                     ...prevState,
                     [index]: false,
                 }))}
@@ -88,7 +88,7 @@ function SearchBar({ searchResults, setSearchResults }) {
             </Fade>
         ));
     };
-    
+
     return (
         <div>
 
