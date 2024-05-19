@@ -89,7 +89,7 @@ function AirplanesInformationBlock({ data }) {
                 setItemInfo((prevInfo) => ({
                     ...prevInfo,
                     toggleErrorMessage: true,
-                    errorMessage: `Bookmark with AirlineID: ${item.id} is already in your bookmarks!`,
+                    errorMessage: `Bookmark with AirlineID: ${ itemInfo.chosenItem.id } is already in your bookmarks!`,
                     chosenItem: item,
                 }));
                 return;
@@ -116,7 +116,7 @@ function AirplanesInformationBlock({ data }) {
             setItemInfo((prevInfo) => ({
                 ...prevInfo,
                 toggleSuccessMessage: true,
-                successMessage: `Bookmark successfully added for AirlineID: ${item.id}`,
+                successMessage: `Bookmark successfully added for AirlineID: ${ item.id }`,
                 chosenItem: item,
                 newBookmarkId: item.id,
                 toggleNotes: false,
@@ -751,7 +751,7 @@ function AirplanesInformationBlock({ data }) {
                             justifyContent: 'center',
                         }}
                     >
-                        Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.model_name : ''}
+                        Add a note for { itemInfo.chosenItem ? itemInfo.chosenItem.airline_name : '' }
                     </DialogContentText>
                     <textarea
                         rows='5'

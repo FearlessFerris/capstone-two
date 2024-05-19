@@ -116,7 +116,7 @@ function AirplanesInformationBlock({ data }) {
             setItemInfo((prevInfo) => ({
                 ...prevInfo,
                 toggleSuccessMessage: true,
-                successMessage: `Bookmark successfully added for AirportId: ${item.id}`,
+                successMessage: `Bookmark successfully added for AirportId: ${ item.id }`,
                 chosenItem: item,
                 newBookmarkId: item.id,
                 toggleNotes: false,
@@ -752,7 +752,7 @@ function AirplanesInformationBlock({ data }) {
                             justifyContent: 'center',
                         }}
                     >
-                        Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.airline_name : ''}
+                        Add a note for {itemInfo.chosenItem ? itemInfo.chosenItem.airport_name : ''}
                     </DialogContentText>
                     <textarea
                         rows='5'

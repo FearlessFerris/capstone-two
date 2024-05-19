@@ -3,7 +3,7 @@
 
 // Dependencies 
 import React, { useState, useEffect } from 'react';
-import { Box, Button, InputLabel, TextField, Slider } from '@mui/material';
+import { Box, Button, InputLabel, TextField, Typography, Slider, Fade } from '@mui/material';
 import axios from 'axios';
 
 
@@ -16,23 +16,25 @@ import AirportsInformationBlock from './AirportsInformationBlock';
 
 // SearchBar Component 
 function SearchBar({ searchResults, setSearchResults }) {
-
     const [ searchTerm, setSearchTerm ] = useState( '' );
     const [ offset, setOffset ] = useState( 0 );
     const [ limit, setLimit ] = useState( 30 );
     const [ loading, setLoading ] = useState( false );
     const [ selectedType, setSelectedType ] = useState( 'airplanes' );
+    const [ visibleSearchResults, setVisibleSearchResults ] = useState([]);
+    const [ itemVisibility, setItemVisibility ] = useState({});
 
     const handleChange = ( e ) => {
         setSearchTerm( e.target.value );
     }; 
 
-    const handleLimitChange = ( e ) => {
-        setLimit( e.target.value );
-    }
+    const handleLimitChange = (event, value) => {
+        setLimit(value);
+    };
 
-    const handleTypeChange = ( e ) => {
-        setSelectedType( e );
+    const handleTypeChange = ( type ) => {
+        setSelectedType( type );
+        setVisibleSearchResults([]);
         setSearchResults([]);
     }
 
@@ -44,40 +46,50 @@ function SearchBar({ searchResults, setSearchResults }) {
     };
 
     const fetchResults = async () => {
-        try{
-            setLoading( true );
-            const response = await axios.get( `/search/${ selectedType }`, {
-                params: {
-                    searchTerm,
-                    offset,
-                    limit,
-                }
-            })
-            setSearchResults( response.data.data );
-            setOffset( ( previousOffset ) => previousOffset + limit );
+        try {
+          setLoading(true);
+          setVisibleSearchResults([]);
+          const response = await axios.get(`/search/${selectedType}`, {
+            params: { searchTerm, offset, limit },
+          });
+          const newResults = response.data.data;
+          const updatedVisibility = {};
+          newResults.forEach((result, index) => {
+            updatedVisibility[index] = false;
+            setTimeout(() => {
+              setItemVisibility((prevState) => ({ ...prevState, [index]: true }));
+              setVisibleSearchResults((prevResults) => [...prevResults, result]);
+            }, index * 300);
+          });
+          setItemVisibility(updatedVisibility);
+          setOffset((previousOffset) => previousOffset + limit);
+        } catch (error) {
+          console.error(`Error Fetching Results of ${searchTerm}`);
+        } finally {
+          setLoading(false);
         }
-        catch( error ){
-            console.error( `Error Fetching Results of ${ searchTerm }` );
-        }
-        finally{
-            setLoading( false );
-        }
-    }
+      };
 
     const renderInformationBlock = () => {
-        switch( selectedType ) {
-            case 'airplanes':
-                return <AirplanesInformationBlock data = { searchResults } />;
-            case 'airlines': 
-                return <AirlinesInformationBlock data = { searchResults } />;
-            case 'airports':
-                return <AirportsInformationBlock data = { searchResults } />;
-            default:
-                return null;
-        }
-    }
+        return searchResults.map((result, index) => (
+            <Fade
+                key={index}
+                in={itemVisibility[index]}
+                timeout={1000}
+                unmountOnExit
+                onExited={() => setItemVisibility((prevState) => ({
+                    ...prevState,
+                    [index]: false,
+                }))}
+            >
+                <div key={result.id}>
+                    <p>{result.title}</p>
+                </div>
+            </Fade>
+        ));
+    };
     
-    return(
+    return (
         <div>
 
         <div className = 'searchbar-container'
@@ -213,7 +225,7 @@ function SearchBar({ searchResults, setSearchResults }) {
                         color: 'cyan'
                     }}
                     valueLabelDisplay = 'auto'
-                    onClick = { handleLimitChange }
+                    onChangeCommitted = { handleLimitChange }
                 >
                 Number of Results 
                 </Slider>  
@@ -307,13 +319,22 @@ function SearchBar({ searchResults, setSearchResults }) {
             </Box>
         </form>
         </div>
-        <div 
-            key = { selectedType }
-        >
-            { renderInformationBlock() }
+            <div key={selectedType}>
+                {loading ? (
+                    <Typography variant="h6" style={{ color: 'cyan', textAlign: 'center' }}>
+                        Loading...
+                    </Typography>
+                ) : (
+                    <div>{renderInformationBlock()}</div>
+                )}
+            </div>
+            <div key={`${selectedType}-results`}>
+                {selectedType === 'airplanes' && <AirplanesInformationBlock data={visibleSearchResults} />}
+                {selectedType === 'airlines' && <AirlinesInformationBlock data={visibleSearchResults} />}
+                {selectedType === 'airports' && <AirportsInformationBlock data={visibleSearchResults} />}
+            </div>
         </div>
-    </div>
-    )
+    );
 }
 
-export default SearchBar;
+export default SearchBar

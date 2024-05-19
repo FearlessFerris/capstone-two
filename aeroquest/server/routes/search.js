@@ -63,5 +63,20 @@ router.get( '/:type', async ( req, res, next ) => {
 });
 
 
+// router.get('/history/:userId', async (req, res) => {
+//     try {
+//       const { userId } = req.params;
+//       const result = await db.query(
+//         'SELECT * FROM searches WHERE user_id = $1 ORDER BY search_timestamp DESC',
+//         [userId]
+//       );
+//       res.status(200).json({ data: result.rows });
+//     } catch (error) {
+//       console.error('Error fetching search history:', error.message);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//     }
+//   });
+
+
 module.exports = router;
 
