@@ -531,7 +531,7 @@ function AirplanesInformationBlock({ data }) {
             ))}
 
             <Dialog
-                open={itemInfo.toggleSuccessMessage}
+                open={ itemInfo.toggleSuccessMessage }
                 onClose={() => setItemInfo((prevInfo) => ({ ...prevInfo, toggleSuccessMessage: false }))}
                 fullWidth
                 maxWidth='md'
@@ -542,13 +542,14 @@ function AirplanesInformationBlock({ data }) {
                     style={{
                         backgroundColor: '#212121',
                         border: '.2rem solid white',
-                        color: 'cyan',
+                        color: 'white',
                         display: 'flex',
                         fontSize: 'xx-large',
                         justifyContent: 'center',
                     }}
                 >
-                    {`Bookmark Added For AirportID: ${itemInfo.chosenItem?.id}`}
+                    {/* {`Bookmark Added For AirportID: ${itemInfo.chosenItem?.id}`} */}
+                    { itemInfo.actionType === 'added' ? 'Bookmark Added' : 'Bookmark Updated' }
                 </DialogTitle>
                 <DialogContent
                     style={{
@@ -634,13 +635,13 @@ function AirplanesInformationBlock({ data }) {
                     style={{
                         backgroundColor: '#212121',
                         border: '.2rem solid white',
-                        color: 'cyan',
+                        color: 'white',
                         display: 'flex',
                         fontSize: 'xx-large',
                         justifyContent: 'center',
                     }}
                 >
-                    {`Bookmark Exists For AirlineID: ${itemInfo.chosenItem?.id}`}
+                    {`Bookmark Exists For AirportID: ${ itemInfo.chosenItem?.id }`}
                 </DialogTitle>
                 <DialogContent
                     style={{
@@ -726,7 +727,7 @@ function AirplanesInformationBlock({ data }) {
                     style={{
                         backgroundColor: '#212121',
                         border: '.2rem solid white',
-                        color: 'cyan',
+                        color: 'white',
                         display: 'flex',
                         fontSize: 'xx-large',
                         justifyContent: 'center',
